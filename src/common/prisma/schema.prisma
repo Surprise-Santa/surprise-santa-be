@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+model User {
+  id         String             @id @default(uuid()) @db.Uuid
+  firstName  String             @db.VarChar
+  middleName String?            @db.VarChar
+  lastName   String             @db.VarChar
+  email      String             @unique @db.VarChar
+  phone      String?
+  password   String
+  gender     Gender
+  isAdmin    Boolean            @default(false) @db.Boolean
+  companyId  String?            @db.Uuid
+  status     Boolean            @default(true)
+  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
+  createdBy  String?            @db.VarChar
+  updatedAt  DateTime           @updatedAt() @db.Timestamptz(6)
+  updatedBy  String?            @db.VarChar
+  company    Company?           @relation(fields: [companyId], references: [id])
+  events     EventParticipant[]
+
+  @@map("users")
+}
+
+model Company {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar
+  email     String   @unique @db.VarChar
+  logoUrl   String?  @db.VarChar
+  users     User[]
+  events    Event[]
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String?  @db.VarChar
+  updatedAt DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy String?  @db.VarChar
+
+  @@map("companies")
+}
+
+model Event {
+  id           String             @id @default(uuid()) @db.Uuid
+  title        String             @db.VarChar(100)
+  description  String?            @db.VarChar
+  startDate    DateTime           @db.Timestamptz(6)
+  endDate      DateTime?          @db.Timestamptz(6)
+  eventLink    String?            @db.VarChar
+  isActive     Boolean            @default(false)
+  companyId    String             @db.Uuid
+  company      Company            @relation(fields: [companyId], references: [id])
+  participants EventParticipant[]
+  pairs        EventPairing[]
+  status       Boolean            @default(true)
+  createdAt    DateTime           @default(now()) @db.Timestamptz(6)
+  createdBy    String?            @db.VarChar
+  updatedAt    DateTime           @updatedAt() @db.Timestamptz(6)
+  updatedBy    String?            @db.VarChar
+
+  @@map("events")
+}
+
+model EventParticipant {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String?  @db.VarChar
+  updatedAt DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy String?  @db.VarChar
+
+  @@unique([userId, eventId])
+  @@map("event_participants")
+}
+
+model EventPairing {
+  id          String   @id @default(uuid()) @db.Uuid
+  beneficiary String   @db.Uuid
+  donor       String   @db.Uuid
+  eventId     String?  @db.Uuid
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdBy   String?  @db.VarChar
+  updatedAt   DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy   String?  @db.VarChar
+  event       Event?   @relation(fields: [eventId], references: [id])
+
+  @@map("event_pairings")
+}
