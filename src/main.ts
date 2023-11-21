@@ -4,7 +4,6 @@ import {
   BadRequestException,
   ValidationError,
   ValidationPipe,
-  VersioningType,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
