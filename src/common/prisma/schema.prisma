@@ -25,20 +25,18 @@ model User {
   phone      String?
   password   String
   gender     Gender
-  isAdmin    Boolean            @default(false) @db.Boolean
-  companyId  String?            @db.Uuid
+  groups     Group[]
+  events     EventParticipant[]
   status     Boolean            @default(true)
   createdAt  DateTime           @default(now()) @db.Timestamptz(6)
   createdBy  String?            @db.VarChar
   updatedAt  DateTime           @updatedAt() @db.Timestamptz(6)
   updatedBy  String?            @db.VarChar
-  company    Company?           @relation(fields: [companyId], references: [id])
-  events     EventParticipant[]
 
   @@map("users")
 }
 
-model Company {
+model Group {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @unique @db.VarChar
   email     String   @unique @db.VarChar
@@ -51,7 +49,7 @@ model Company {
   updatedAt DateTime @updatedAt() @db.Timestamptz(6)
   updatedBy String?  @db.VarChar
 
-  @@map("companies")
+  @@map("groups")
 }
 
 model Event {
@@ -62,8 +60,8 @@ model Event {
   endDate      DateTime?          @db.Timestamptz(6)
   eventLink    String?            @db.VarChar
   isActive     Boolean            @default(false)
-  companyId    String             @db.Uuid
-  company      Company            @relation(fields: [companyId], references: [id])
+  groupId      String             @db.Uuid
+  group        Group              @relation(fields: [groupId], references: [id])
   participants EventParticipant[]
   pairs        EventPairing[]
   status       Boolean            @default(true)
