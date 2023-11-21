@@ -77,8 +77,8 @@ model Event {
 
 model EventParticipant {
   id        String   @id @default(uuid()) @db.Uuid
-  userId    String
-  eventId   String
+  userId    String   @db.Uuid
+  eventId   String   @db.Uuid
   event     Event    @relation(fields: [eventId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   status    Boolean  @default(true)
