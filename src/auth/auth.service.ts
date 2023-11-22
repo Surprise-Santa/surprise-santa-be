@@ -1,9 +1,14 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as argon from 'argon2';
-import { signupDto } from './dto/signup.dto';
+import { SignupDto } from './dto/signup.dto';
 import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +18,7 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async signup({ password, ...rest }: signupDto) {
+  async signup({ password, ...rest }: SignupDto) {
     const hash = await argon.hash(password);
 
     try {
@@ -34,6 +39,25 @@ export class AuthService {
 
       throw err;
     }
+  }
+
+  async login({ email, password }: LoginDto) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const verifyPass = await argon.verify(user.password, password);
+
+    if (!verifyPass) throw new UnauthorizedException('Incorrect Credentials');
+
+    const token = await this.signToken(user.id, user.email);
+
+    delete user.password;
+
+    return {
+      token,
+      user,
+    };
   }
 
   // JWT Sign token
