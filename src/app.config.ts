@@ -32,7 +32,7 @@ const config = {
   environment: env.require('NODE_ENV', 'development'),
   jwt: {
     secret: env.require('JWT_SECRET'),
-    expiresIn: parseInt(env('JWT_EXPIRY', 60 * 60)),
+    expiresIn: parseInt(env('JWT_EXPIRES_IN', 60 * 60)),
   },
   messaging: {
     mail: {
@@ -41,6 +41,10 @@ const config = {
       user: env('MAIL_USER'),
       password: env('MAIL_PASSWORD'),
     },
+  },
+  redis: {
+    url: env('REDIS_URL'),
+    ttl: env('REDIS_TTL'),
   },
   swagger: {
     user: {
