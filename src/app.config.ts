@@ -1,4 +1,5 @@
-import dotenv from 'dotenv';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const dotenv = require('dotenv');
 
 dotenv.config();
 
@@ -17,11 +18,11 @@ env.require = (key: string, defaultValue: any = undefined) => {
 const config = {
   app: {
     name: 'secret santa',
-    port: parseInt(env('APP_PORT', 3001)),
+    port: parseInt(env('APP_PORT', 4000)),
     hostname: env('APP_HOSTNAME', '0.0.0.0'),
     host: env(
       'APP_HOST',
-      `http://localhost:${parseInt(env('APP_PORT', 3001))}`,
+      `http://localhost:${parseInt(env('APP_PORT', 4000))}`,
     ),
   },
   cloudinary: {},
@@ -29,6 +30,10 @@ const config = {
     url: env.require('DATABASE_URL'),
   },
   environment: env.require('NODE_ENV', 'development'),
+  jwt: {
+    secret: env.require('JWT_SECRET'),
+    expiresIn: parseInt(env('JWT_EXPIRY', 30 * 60)),
+  },
   swagger: {
     user: {
       [env('SWAGGER_USER_NAME', 'swaggerAdmin')]: env(
