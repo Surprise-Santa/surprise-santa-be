@@ -17,41 +17,40 @@ enum Gender {
 }
 
 model User {
-  id         String             @id @default(uuid()) @db.Uuid
-  firstName  String             @db.VarChar
-  middleName String?            @db.VarChar
-  lastName   String             @db.VarChar
-  email      String             @unique @db.VarChar
-  phone      String?
-  password   String
-  gender     Gender
-  isAdmin    Boolean            @default(false) @db.Boolean
-  companyId  String?            @db.Uuid
-  status     Boolean            @default(true)
-  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
-  createdBy  String?            @db.VarChar
-  updatedAt  DateTime           @updatedAt() @db.Timestamptz(6)
-  updatedBy  String?            @db.VarChar
-  company    Company?           @relation(fields: [companyId], references: [id])
-  events     EventParticipant[]
+  id            String   @id @default(uuid()) @db.Uuid
+  firstName     String   @db.VarChar
+  middleName    String?  @db.VarChar
+  lastName      String   @db.VarChar
+  email         String   @unique @db.VarChar
+  phone         String?
+  password      String
+  gender        Gender
+  groups        Group[]
+  profileImgUrl String?  @db.VarChar
+  status        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  createdBy     String?  @db.VarChar
+  updatedAt     DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy     String?  @db.VarChar
 
   @@map("users")
 }
 
-model Company {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique @db.VarChar
-  email     String   @unique @db.VarChar
-  logoUrl   String?  @db.VarChar
-  users     User[]
-  events    Event[]
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  createdBy String?  @db.VarChar
-  updatedAt DateTime @updatedAt() @db.Timestamptz(6)
-  updatedBy String?  @db.VarChar
+model Group {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar
+  description String?  @db.VarChar
+  isPublic    Boolean  @default(false) @db.Boolean
+  logoUrl     String?  @db.VarChar
+  users       User[]
+  events      Event[]
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdBy   String?  @db.VarChar
+  updatedAt   DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy   String?  @db.VarChar
 
-  @@map("companies")
+  @@map("groups")
 }
 
 model Event {
@@ -62,8 +61,8 @@ model Event {
   endDate      DateTime?          @db.Timestamptz(6)
   eventLink    String?            @db.VarChar
   isActive     Boolean            @default(false)
-  companyId    String             @db.Uuid
-  company      Company            @relation(fields: [companyId], references: [id])
+  groupId      String             @db.Uuid
+  group        Group              @relation(fields: [groupId], references: [id])
   participants EventParticipant[]
   pairs        EventPairing[]
   status       Boolean            @default(true)
@@ -80,7 +79,6 @@ model EventParticipant {
   userId    String   @db.Uuid
   eventId   String   @db.Uuid
   event     Event    @relation(fields: [eventId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
   status    Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   createdBy String?  @db.VarChar
