@@ -4,7 +4,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
 import { UserModule } from './user/user.module';
-import { CompanyModule } from './company/company.module';
+import { GroupModule } from './group/group.module';
 import { MessagingModule } from './common/messaging/messaging.module';
 import { PrismaModule } from './common/database/prisma/prisma.module';
 import { PrismaService } from './common/database/prisma/prisma.service';
@@ -17,7 +17,7 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
 @Module({
   imports: [
     AuthModule,
-    CompanyModule,
+    GroupModule,
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
     EventModule,
     JwtModule.registerAsync({
