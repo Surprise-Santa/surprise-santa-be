@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Gender } from '../../common/interfaces';
 
-export class signupDto {
+export class SignupDto {
   @IsEmail()
   @Transform(({ value }) => value && value.trim().toLowerCase())
   @IsNotEmpty()
