@@ -42,7 +42,7 @@ model Group {
   description String?  @db.VarChar
   isPublic    Boolean  @default(false) @db.Boolean
   logoUrl     String?  @db.VarChar
-  users       User[]
+  members     User[]
   events      Event[]
   status      Boolean  @default(true)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
