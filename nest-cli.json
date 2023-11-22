@@ -4,12 +4,13 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
+    "assets": ["common/messaging/mailing/templates/**/*.hbs"],
+    "watchAssets": true,
     "plugins": [
       {
         "name": "@nestjs/swagger",
         "options": {
-          "dtoFileNameSuffix": [".dto.ts"],
-          "classValidatorShim": false
+          "classValidatorShim": true
         }
       }
     ]
