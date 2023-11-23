@@ -10,5 +10,6 @@ import { CacheModule } from 'src/common/cache/cache.module';
   controllers: [AuthController],
   providers: [AuthService, MailingService, TokenService],
   imports: [JwtModule.register({}), CacheModule],
+  exports: [AuthService],
 })
 export class AuthModule {}

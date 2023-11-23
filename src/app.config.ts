@@ -15,6 +15,11 @@ env.require = (key: string, defaultValue: any = undefined) => {
   return value;
 };
 
+const folderName =
+  process.env.NODE_ENV === 'production'
+    ? `secret_santa_${process.env.NODE_ENV}`
+    : 'secret_santa_development';
+
 const config = {
   app: {
     name: 'secret santa',
@@ -30,7 +35,7 @@ const config = {
     cloudName: env('CLOUD_NAME'),
     apiKey: env('CLOUD_API_KEY'),
     apiSecret: env('CLOUD_API_SECRET'),
-    folderName: env('CLOUD_FOLDER_NAME'),
+    folderName,
   },
   db: {
     url: env.require('DATABASE_URL'),
