@@ -40,7 +40,7 @@ export class CloudinaryService {
             {
               resource_type: 'image',
               // create folder to store image
-              public_id: `${this.folder}/images/${type}/${id}`,
+              public_id: `${this.folder}/${type}/${id}`,
             },
             (error, result) => {
               if (error) return reject(error);
