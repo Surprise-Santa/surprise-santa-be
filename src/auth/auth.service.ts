@@ -4,8 +4,8 @@ import {
   NotAcceptableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as argon from 'argon2';
 import { SignupDto } from './dto/signup.dto';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -25,7 +25,7 @@ export class AuthService {
   ) {}
 
   async signup({ password, ...rest }: SignupDto) {
-    const hash = await argon.hash(password);
+    const hash = await bcrypt.hash(password, 10);
 
     try {
       const user = await this.prisma.user.create({
@@ -52,7 +52,7 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('User not found');
 
-    const verifyPass = await argon.verify(user.password, password);
+    const verifyPass = await bcrypt.compare(password, user.password);
 
     if (!verifyPass) throw new UnauthorizedException('Incorrect Credentials');
 
