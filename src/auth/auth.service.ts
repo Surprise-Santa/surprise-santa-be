@@ -68,4 +68,44 @@ export class AuthService {
 
     return await this.jwt.signAsync(payload, { secret, expiresIn });
   }
+
+  async requestResetPassword(email: string) {
+    const user = await this.prisma.user.findFirst({ where: { email } });
+
+    if (!user) {
+      throw new NotAcceptableException('Invalid Email Address');
+    }
+
+    const baseUrl = this.config.get('app.baseUrl');
+    const token = await this.tokenService.createToken(
+      TokenType.RESET_PASS,
+      user.email,
+    );
+
+    const link = `${baseUrl}/auth/reset-password?token=${token}`;
+
+    return this.messageService.sendResetToken({
+      email,
+      firstName: user.firstName,
+      link,
+    });
+  }
+
+  async resetPassword(newPassword: string, token: string) {
+    const validToken = await this.tokenService.verifyToken(
+      TokenType.RESET_PASS,
+      token,
+    );
+
+    if (!validToken.isValid) {
+      throw new NotAcceptableException('Invalid Token');
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { email: validToken.id },
+      data: { password: hash },
+    });
+  }
 }
