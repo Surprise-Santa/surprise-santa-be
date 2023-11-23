@@ -12,13 +12,13 @@ import { UPLOAD_FILE_NAME } from './constants';
 export class CloudinaryService {
   constructor(private configService: ConfigService) {}
 
-  folder = this.configService.get('cloudinary.folder');
+  folder = this.configService.get('cloudinary.folderName');
 
   uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
-          { folder: 'secret_santa', resource_type: 'auto' },
+          { folder: this.folder, resource_type: 'auto' },
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
