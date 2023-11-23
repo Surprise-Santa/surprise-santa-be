@@ -18,5 +18,9 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+    "paths": {
+      "@@/*": ["src/*"],
+      "@@cloudinary/*": ["src/cloudinary/*"],
+    }
   }
 }
