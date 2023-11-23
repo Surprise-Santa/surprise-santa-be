@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import * as bodyParser from 'body-parser';
+import bodyParser from 'body-parser';
 import basicAuth from 'express-basic-auth';
 import { RequestInterceptor } from './common/interceptors/request.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
