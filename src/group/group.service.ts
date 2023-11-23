@@ -50,11 +50,25 @@ export class GroupService {
 
     const logosUrl = uploadLogo?.secure_url || '';
 
-    await this.prisma.group.create({
+    const group = await this.prisma.group.create({
       data: {
         ...dto,
         logoUrl: logosUrl,
+        createdBy: `${user.firstName} ${user.lastName}`,
       },
     });
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        groups: {
+          connect: {
+            id: group.id,
+          },
+        },
+      },
+    });
+
+    return group;
   }
 }

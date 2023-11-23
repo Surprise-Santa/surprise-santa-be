@@ -4,6 +4,7 @@ import {
   Post,
   UploadedFile,
   UseGuards,
+  Get,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -30,5 +31,12 @@ export class UserController {
     @GetRequestUser() user: User,
   ) {
     return this.userService.uploadProfilePic(picture, user);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
+  @Get('/my-info')
+  async getMyInfo(@GetRequestUser() user: User) {
+    return this.userService.getUserInfo(user);
   }
 }

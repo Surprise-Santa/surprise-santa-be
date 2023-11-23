@@ -61,4 +61,11 @@ export class CloudinaryService {
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return this.uploadImage(file, UPLOAD_FILE_NAME.LOGO, id);
   }
+
+  async uploadProfilePic(
+    file: Express.Multer.File,
+    id: string,
+  ): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return this.uploadImage(file, UPLOAD_FILE_NAME.PROFILE_PIC, id);
+  }
 }
