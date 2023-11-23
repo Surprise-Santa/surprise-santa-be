@@ -25,7 +25,11 @@ const config = {
       `http://localhost:${parseInt(env('APP_PORT', 4000))}`,
     ),
   },
-  cloudinary: {},
+  cloudinary: {
+    cloudName: env('CLOUD_NAME'),
+    apiKey: env('CLOUD_API_KEY'),
+    apiSecret: env('CLOUD_API_SECRET'),
+  },
   db: {
     url: env.require('DATABASE_URL'),
   },

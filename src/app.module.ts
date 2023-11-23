@@ -15,6 +15,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { CacheModule } from './common/cache/cache.module';
 import { TokenService } from './common/token/token.service';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { TokenService } from './common/token/token.service';
       ],
     }),
     UserModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [PrismaService, JwtService, JwtStrategy, TokenService],
