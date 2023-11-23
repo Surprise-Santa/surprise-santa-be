@@ -15,7 +15,10 @@ export class UserService {
       if (!file) {
         throw new NotAcceptableException('No file was uploaded');
       }
-      const { secure_url } = await this.cloudinaryService.uploadFile(file);
+      const { secure_url } = await this.cloudinaryService.uploadProfilePic(
+        file,
+        user.id,
+      );
 
       const args: Prisma.UserUpdateArgs = {
         where: { id: user.id },
@@ -31,5 +34,22 @@ export class UserService {
       console.error('Error uploading profile picture:', error);
       throw new NotAcceptableException('Failed to upload profile picture');
     }
+  }
+
+  async getUserInfo(user: User) {
+    const foundUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        groups: {
+          include: {
+            members: true,
+          },
+        },
+      },
+    });
+
+    if (!foundUser) throw new NotAcceptableException('User not found');
+
+    return foundUser;
   }
 }
