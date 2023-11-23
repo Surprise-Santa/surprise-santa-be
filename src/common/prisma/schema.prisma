@@ -17,40 +17,54 @@ enum Gender {
 }
 
 model User {
-  id            String   @id @default(uuid()) @db.Uuid
-  firstName     String   @db.VarChar
-  middleName    String?  @db.VarChar
-  lastName      String   @db.VarChar
-  email         String   @unique @db.VarChar
+  id            String        @id @default(uuid()) @db.Uuid
+  firstName     String        @db.VarChar
+  middleName    String?       @db.VarChar
+  lastName      String        @db.VarChar
+  email         String        @unique @db.VarChar
   phone         String?
   password      String
   gender        Gender
-  groups        Group[]
-  profileImgUrl String?  @db.VarChar
-  status        Boolean  @default(true)
-  createdAt     DateTime @default(now()) @db.Timestamptz(6)
-  createdBy     String?  @db.VarChar
-  updatedAt     DateTime @updatedAt() @db.Timestamptz(6)
-  updatedBy     String?  @db.VarChar
+  profileImgUrl String?       @db.VarChar
+  status        Boolean       @default(true)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(6)
+  createdBy     String?       @db.VarChar
+  updatedAt     DateTime      @updatedAt() @db.Timestamptz(6)
+  updatedBy     String?       @db.VarChar
+  groups        GroupMember[]
+  ownGroups     Group[]
 
   @@map("users")
 }
 
 model Group {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @unique @db.VarChar
-  description String?  @db.VarChar
-  isPublic    Boolean  @default(false) @db.Boolean
-  logoUrl     String?  @db.VarChar
-  members     User[]
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String        @unique @db.VarChar
+  description String?       @db.VarChar
+  isPublic    Boolean       @default(false) @db.Boolean
+  logoUrl     String?       @db.VarChar
+  members     GroupMember[]
   events      Event[]
-  status      Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  createdBy   String?  @db.VarChar
-  updatedAt   DateTime @updatedAt() @db.Timestamptz(6)
-  updatedBy   String?  @db.VarChar
+  status      Boolean       @default(true)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(6)
+  createdBy   String        @db.Uuid
+  updatedAt   DateTime      @updatedAt() @db.Timestamptz(6)
+  updatedBy   String?       @db.Uuid
+  owner       User          @relation(fields: [createdBy], references: [id])
 
   @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  groupId   String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String?  @db.Uuid
+  updatedAt DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy String?  @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  group     Group    @relation(fields: [groupId], references: [id])
 }
 
 model Event {
