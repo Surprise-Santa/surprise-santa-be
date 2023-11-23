@@ -1,12 +1,12 @@
-import { Inject, Injectable, NotAcceptableException } from '@nestjs/common';
-import { Prisma, PrismaClient, User } from '@prisma/client';
+import { PrismaService } from '@@/common/database/prisma/prisma.service';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
+import { Prisma, User } from '@prisma/client';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(CloudinaryService)
-    private prisma: PrismaClient,
+    private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
   ) {}
 

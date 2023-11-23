@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -106,7 +106,7 @@ export class AuthService {
       throw new NotAcceptableException('Invalid Token');
     }
 
-    const hash = await argon.hash(newPassword);
+    const hash = await bcrypt.hash(newPassword, 10);
 
     await this.prisma.user.update({
       where: { email: validToken.id },
