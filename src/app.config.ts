@@ -29,10 +29,6 @@ const config = {
     cloudName: env('CLOUD_NAME'),
     apiKey: env('CLOUD_API_KEY'),
     apiSecret: env('CLOUD_API_SECRET'),
-    folder: env.require(
-      'secret_santa_' + 'NODE_ENV',
-      'secret_santa_development',
-    ),
   },
   db: {
     url: env.require('DATABASE_URL'),
