@@ -24,6 +24,7 @@ const config = {
       'APP_HOST',
       `http://localhost:${parseInt(env('APP_PORT', 4000))}`,
     ),
+    baseUrl: env('BASE_URL'),
   },
   cloudinary: {
     cloudName: env('CLOUD_NAME'),
