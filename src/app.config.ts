@@ -29,6 +29,7 @@ const config = {
     cloudName: env('CLOUD_NAME'),
     apiKey: env('CLOUD_API_KEY'),
     apiSecret: env('CLOUD_API_SECRET'),
+    folderName: env('CLOUD_FOLDER_NAME'),
   },
   db: {
     url: env.require('DATABASE_URL'),
