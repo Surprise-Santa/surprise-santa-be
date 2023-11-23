@@ -1,14 +1,18 @@
 import {
   ForbiddenException,
   Injectable,
+  NotAcceptableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import argon from 'argon2';
 import { SignupDto } from './dto/signup.dto';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
+import { MailingService } from 'src/common/messaging/mailing/mailing.service';
+import { TokenService } from 'src/common/token/token.service';
+import { TokenType } from 'src/common/token/interfaces';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +20,12 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
+    private messageService: MailingService,
+    private tokenService: TokenService,
   ) {}
 
   async signup({ password, ...rest }: SignupDto) {
-    const hash = await argon.hash(password);
+    const hash = await bcrypt.hash(password, 10);
 
     try {
       const user = await this.prisma.user.create({
@@ -46,7 +52,7 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('User not found');
 
-    const verifyPass = await argon.verify(user.password, password);
+    const verifyPass = await bcrypt.compare(password, user.password);
 
     if (!verifyPass) throw new UnauthorizedException('Incorrect Credentials');
 
@@ -60,12 +66,51 @@ export class AuthService {
     };
   }
 
-  // JWT Sign token
   private async signToken(userId: string, email: string) {
     const payload = { sub: userId, email };
-    const secret = this.config.get('JWT_SECRET');
-    const expiresIn = this.config.get('JWT_EXPIRES_IN');
+    const secret = this.config.get('jwt.secret');
+    const expiresIn = this.config.get('jwt.expiresIn');
 
     return await this.jwt.signAsync(payload, { secret, expiresIn });
+  }
+
+  async requestResetPassword(email: string) {
+    const user = await this.prisma.user.findFirst({ where: { email } });
+
+    if (!user) {
+      throw new NotAcceptableException('Invalid Email Address');
+    }
+
+    const baseUrl = this.config.get('app.baseUrl');
+    const token = await this.tokenService.createToken(
+      TokenType.RESET_PASS,
+      user.email,
+    );
+
+    const link = `${baseUrl}/auth/reset-password?token=${token}`;
+
+    return this.messageService.sendResetToken({
+      email,
+      firstName: user.firstName,
+      link,
+    });
+  }
+
+  async resetPassword(newPassword: string, token: string) {
+    const validToken = await this.tokenService.verifyToken(
+      TokenType.RESET_PASS,
+      token,
+    );
+
+    if (!validToken.isValid) {
+      throw new NotAcceptableException('Invalid Token');
+    }
+
+    const hash = await argon.hash(newPassword);
+
+    await this.prisma.user.update({
+      where: { email: validToken.id },
+      data: { password: hash },
+    });
   }
 }
