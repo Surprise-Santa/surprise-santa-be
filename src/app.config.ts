@@ -25,14 +25,18 @@ const config = {
       `http://localhost:${parseInt(env('APP_PORT', 4000))}`,
     ),
   },
-  cloudinary: {},
+  cloudinary: {
+    cloudName: env('CLOUD_NAME'),
+    apiKey: env('CLOUD_API_KEY'),
+    apiSecret: env('CLOUD_API_SECRET'),
+  },
   db: {
     url: env.require('DATABASE_URL'),
   },
   environment: env.require('NODE_ENV', 'development'),
   jwt: {
     secret: env.require('JWT_SECRET'),
-    expiresIn: parseInt(env('JWT_EXPIRY', 60 * 60)),
+    expiresIn: parseInt(env('JWT_EXPIRES_IN', 60 * 60)),
   },
   messaging: {
     mail: {
@@ -41,6 +45,10 @@ const config = {
       user: env('MAIL_USER'),
       password: env('MAIL_PASSWORD'),
     },
+  },
+  redis: {
+    url: env('REDIS_URL'),
+    ttl: env('REDIS_TTL'),
   },
   swagger: {
     user: {

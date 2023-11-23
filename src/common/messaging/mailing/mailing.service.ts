@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { IResetPassword } from './interfaces';
 
 @Injectable()
 export class MailingService {
@@ -14,5 +15,14 @@ export class MailingService {
     });
 
     return { message: 'Test email successfully sent' };
+  }
+
+  async sendResetToken({ email, firstName, link }: IResetPassword) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Password Reset Requested',
+      template: 'passwordResetEmail',
+      context: { email, firstName, link },
+    });
   }
 }
