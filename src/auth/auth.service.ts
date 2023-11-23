@@ -1,14 +1,18 @@
 import {
   ForbiddenException,
   Injectable,
+  NotAcceptableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
+import { MailingService } from 'src/common/messaging/mailing/mailing.service';
+import { TokenService } from 'src/common/token/token.service';
+import { TokenType } from 'src/common/token/interfaces';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +20,8 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
+    private messageService: MailingService,
+    private tokenService: TokenService,
   ) {}
 
   async signup({ password, ...rest }: SignupDto) {
@@ -60,11 +66,10 @@ export class AuthService {
     };
   }
 
-  // JWT Sign token
   private async signToken(userId: string, email: string) {
     const payload = { sub: userId, email };
-    const secret = this.config.get('JWT_SECRET');
-    const expiresIn = this.config.get('JWT_EXPIRES_IN');
+    const secret = this.config.get('jwt.secret');
+    const expiresIn = this.config.get('jwt.expiresIn');
 
     return await this.jwt.signAsync(payload, { secret, expiresIn });
   }

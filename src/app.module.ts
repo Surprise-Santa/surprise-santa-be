@@ -13,11 +13,15 @@ import appConfig from './app.config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { CacheModule } from './common/cache/cache.module';
+import { TokenService } from './common/token/token.service';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     AuthModule,
     GroupModule,
+    CacheModule,
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
     EventModule,
     JwtModule.registerAsync({
@@ -42,9 +46,10 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
       ],
     }),
     UserModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
-  providers: [PrismaService, JwtService, JwtStrategy],
-  exports: [AuthModule, JwtService],
+  providers: [PrismaService, JwtService, JwtStrategy, TokenService],
+  exports: [AuthModule, JwtService, TokenService],
 })
 export class AppModule {}
