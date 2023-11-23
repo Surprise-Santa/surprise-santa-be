@@ -10,8 +10,8 @@ export class CacheService {
     return this.cache.get(key);
   }
 
-  async set(key: string, value: any, ttl?: number): Promise<any> {
-    return this.cache.set(key, value, ttl ? ttl : 3600);
+  async set(key: string, value: any, ttl: number = 3600 * 1000): Promise<any> {
+    return this.cache.set(key, value, ttl);
   }
 
   async remove(key: string): Promise<any | any[]> {
