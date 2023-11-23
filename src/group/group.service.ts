@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/common/database/prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -50,11 +51,31 @@ export class GroupService {
 
     const logosUrl = uploadLogo?.secure_url || '';
 
-    await this.prisma.group.create({
-      data: {
-        ...dto,
-        logoUrl: logosUrl,
-      },
-    });
+    try {
+      await this.prisma.$transaction(async () => {
+        const group = await this.prisma.group.create({
+          data: {
+            ...dto,
+            logoUrl: logosUrl,
+            createdBy: user.id,
+          },
+        });
+
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            groups: {
+              connect: {
+                id: group.id,
+              },
+            },
+          },
+        });
+        return group;
+      });
+    } catch (error) {
+      console.log(error);
+      throw new ServiceUnavailableException('Failed to create group');
+    }
   }
 }
