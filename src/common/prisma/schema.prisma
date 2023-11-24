@@ -65,6 +65,8 @@ model GroupMember {
   updatedBy String?  @db.Uuid
   user      User     @relation(fields: [userId], references: [id])
   group     Group    @relation(fields: [groupId], references: [id])
+
+  @@map("group_members")
 }
 
 model Event {

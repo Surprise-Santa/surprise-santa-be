@@ -40,16 +40,16 @@ export class UserService {
     const foundUser = await this.prisma.user.findUnique({
       where: { id: user.id },
       include: {
-        groups: {
-          include: {
-            members: true,
-          },
-        },
+        groups: true,
+        ownGroups: true,
       },
     });
 
     if (!foundUser) throw new NotAcceptableException('User not found');
 
-    return foundUser;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...usr } = foundUser;
+
+    return usr;
   }
 }

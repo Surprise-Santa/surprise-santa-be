@@ -45,7 +45,7 @@ export class UserController {
   async getMyInfo(@GetRequestUser() user: User) {
     return this.userService.getUserInfo(user);
   }
-  
+
   @ApiResponseMeta({ message: 'Password Changed Successfully!' })
   @Post('/change-password')
   async changePassword(

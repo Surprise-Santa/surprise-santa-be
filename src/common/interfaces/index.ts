@@ -8,3 +8,7 @@ export enum Gender {
   FEMALE = 'Female',
   OTHER = 'Other',
 }
+
+export enum ApiTag {
+  GROUP = 'Group',
+}
