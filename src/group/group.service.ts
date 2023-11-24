@@ -55,25 +55,34 @@ export class GroupService {
 
     if (!foundUser) throw new NotFoundException('User not found');
 
-    const uploadLogo: any = logoUrl
-      ? await this.cloudinaryService.uploadLogo(logoUrl, user.id).catch(() => {
-          throw new BadRequestException('Invalid file type');
-        })
-      : null;
+    try {
+      await this.prisma.$transaction(async () => {
+        const uploadLogo: any = logoUrl
+          ? await this.cloudinaryService
+              .uploadLogo(logoUrl, user.id)
+              .catch(() => {
+                throw new BadRequestException('Invalid file type');
+              })
+          : null;
 
-    const logosUrl = uploadLogo?.secure_url || '';
+        const logosUrl = uploadLogo?.secure_url || '';
 
-    const group = await this.prisma.group.create({
-      data: {
-        ...dto,
-        logoUrl: logosUrl,
-        owner: { connect: { id: user.id } },
-        members: { create: { user: { connect: { id: user.id } } } },
-      },
-      include: { members: true, events: true },
-    });
+        const group = await this.prisma.group.create({
+          data: {
+            ...dto,
+            logoUrl: logosUrl,
+            owner: { connect: { id: user.id } },
+            members: { create: { user: { connect: { id: user.id } } } },
+          },
+          include: { members: true, events: true },
+        });
 
-    return group;
+        return group;
+      });
+    } catch (error) {
+      console.log(error);
+      throw new ServiceUnavailableException('Failed to create group');
+    }
   }
   catch(error) {
     console.log(error);

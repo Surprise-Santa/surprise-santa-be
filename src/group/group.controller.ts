@@ -30,7 +30,7 @@ export class GroupController {
     return await this.groupService.getMyGroups(user);
   }
 
-  @Get('/my-created-groups')
+  @Get('/own-groups')
   async getMyCreatedGroups(@GetRequestUser() user: User) {
     return await this.groupService.getMyCreatedGroups(user);
   }
