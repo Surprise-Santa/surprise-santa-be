@@ -30,18 +30,21 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
-  async signup({ password, ...rest }: SignupDto) {
+  async signup({ password, email, ...rest }: SignupDto) {
     const hash = await bcrypt.hash(password, 10);
 
     try {
       const user = await this.prisma.user.create({
         data: {
           ...rest,
+          email,
           password: hash,
         },
       });
 
       delete user.password;
+
+      await this.messageService.sendWelcomeEmail(email);
 
       return user;
     } catch (err) {
