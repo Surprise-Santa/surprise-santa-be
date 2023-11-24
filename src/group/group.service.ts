@@ -16,20 +16,32 @@ export class GroupService {
     private cloudinaryService: CloudinaryService,
   ) {}
 
-  async getAllGroupss() {
-    const groups = await this.prisma.group.findMany();
+  async getMyGroups(user: User) {
+    const groups = await this.prisma.groupMember.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: { group: { include: { members: true } } },
+    });
     return groups;
   }
 
-  async getGroupById(id: string) {
-    const group = await this.prisma.group.findUnique({
-      where: { id },
-      include: { members: true },
+  async getGroupById(id: string, user: User) {
+    const group = await this.prisma.groupMember.findFirstOrThrow({
+      where: { userId: user.id },
+      include: { group: true },
     });
 
-    if (!group) throw new NotFoundException('Group not found');
-
     return group;
+  }
+
+  async getMyCreatedGroups(user: User) {
+    const groups = await this.prisma.group.findMany({
+      where: { createdBy: user.id },
+      include: { members: true, events: true },
+    });
+
+    return groups;
   }
 
   async createGroup(
@@ -51,31 +63,42 @@ export class GroupService {
 
     const logosUrl = uploadLogo?.secure_url || '';
 
-    try {
-      await this.prisma.$transaction(async () => {
-        const group = await this.prisma.group.create({
-          data: {
-            ...dto,
-            logoUrl: logosUrl,
-            createdBy: user.id,
-          },
-        });
+    const group = await this.prisma.group.create({
+      data: {
+        ...dto,
+        logoUrl: logosUrl,
+        owner: { connect: { id: user.id } },
+        members: { create: { user: { connect: { id: user.id } } } },
+      },
+      include: { members: true, events: true },
+    });
 
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            groups: {
-              connect: {
-                id: group.id,
-              },
-            },
-          },
-        });
-        return group;
-      });
-    } catch (error) {
-      console.log(error);
-      throw new ServiceUnavailableException('Failed to create group');
-    }
+    return group;
+  }
+  catch(error) {
+    console.log(error);
+    throw new ServiceUnavailableException('Failed to create group');
+  }
+
+  async joinGroup(id: string, user: User) {
+    const group = await this.prisma.group.findUniqueOrThrow({
+      where: { id },
+    });
+
+    // check if user already belongs to the group
+    const groupMember = await this.prisma.groupMember.findFirst({
+      where: { groupId: group.id, userId: user.id },
+    });
+
+    if (groupMember)
+      throw new BadRequestException('You already belong to this group');
+
+    // create the user in the group as a member
+    return await this.prisma.group.update({
+      where: { id },
+      data: {
+        members: { create: { user: { connect: { id: user.id } } } },
+      },
+    });
   }
 }
