@@ -3,10 +3,11 @@ import { PrismaClient, User } from '@prisma/client';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AppUtilities } from '@@/common/utilities';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
+import { PrismaService } from '@@/common/database/prisma/prisma.service';
 
 @Injectable()
 export class EventService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaService) {}
 
   async getEvents(userId: string) {
     return await this.prisma.eventParticipant.findMany({
