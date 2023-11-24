@@ -98,19 +98,17 @@ export class GroupService {
 
     if (!group) throw new NotFoundException('Group not found');
 
-    // check if user already belongs to the group
-    const groupMember = await this.prisma.groupMember.findFirst({
+    const existingMember = await this.prisma.groupMember.findFirst({
       where: { groupId: group.id, userId: user.id },
     });
 
-    if (groupMember)
-      throw new BadRequestException('You already belong to this group');
+    if (existingMember)
+      throw new BadRequestException('You are already a member of this group');
 
-    // create the user in the group as a member
-    return await this.prisma.group.update({
-      where: { id },
+    return await this.prisma.groupMember.create({
       data: {
-        members: { create: { user: { connect: { id: user.id } } } },
+        userId: user.id,
+        groupId: group.id,
       },
     });
   }
