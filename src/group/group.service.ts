@@ -27,10 +27,12 @@ export class GroupService {
   }
 
   async getGroupById(id: string, user: User) {
-    const group = await this.prisma.groupMember.findFirstOrThrow({
+    const group = await this.prisma.groupMember.findFirst({
       where: { userId: user.id },
       include: { group: true },
     });
+
+    if (!group) throw new NotFoundException('Group not found');
 
     return group;
   }
@@ -90,9 +92,11 @@ export class GroupService {
   }
 
   async joinGroup(id: string, user: User) {
-    const group = await this.prisma.group.findUniqueOrThrow({
+    const group = await this.prisma.group.findUnique({
       where: { id },
     });
+
+    if (!group) throw new NotFoundException('Group not found');
 
     // check if user already belongs to the group
     const groupMember = await this.prisma.groupMember.findFirst({
