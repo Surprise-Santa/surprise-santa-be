@@ -16,6 +16,7 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { CacheModule } from './common/cache/cache.module';
 import { TokenService } from './common/token/token.service';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
+import { GoogleStrategy } from './auth/strategy/google.strategy';
 
 @Module({
   imports: [
@@ -49,7 +50,13 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
     CloudinaryModule,
   ],
   controllers: [AppController],
-  providers: [PrismaService, JwtService, JwtStrategy, TokenService],
+  providers: [
+    PrismaService,
+    GoogleStrategy,
+    JwtService,
+    JwtStrategy,
+    TokenService,
+  ],
   exports: [AuthModule, JwtService, TokenService],
 })
 export class AppModule {}

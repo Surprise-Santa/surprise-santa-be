@@ -10,6 +10,23 @@ export class UserService {
     private cloudinaryService: CloudinaryService,
   ) {}
 
+  async getUserInfo(user: User) {
+    const foundUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        groups: {
+          include: { group: true },
+        },
+        ownGroups: true,
+      },
+    });
+
+    if (!foundUser) throw new NotAcceptableException('User not found');
+
+    delete foundUser.password;
+    return foundUser;
+  }
+
   async uploadProfilePic(file: Express.Multer.File, user: User) {
     try {
       if (!file) {
@@ -34,22 +51,5 @@ export class UserService {
       console.error('Error uploading profile picture:', error);
       throw new NotAcceptableException('Failed to upload profile picture');
     }
-  }
-
-  async getUserInfo(user: User) {
-    const foundUser = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      include: {
-        groups: true,
-        ownGroups: true,
-      },
-    });
-
-    if (!foundUser) throw new NotAcceptableException('User not found');
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...usr } = foundUser;
-
-    return usr;
   }
 }

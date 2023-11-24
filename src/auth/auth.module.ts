@@ -5,10 +5,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { MailingService } from 'src/common/messaging/mailing/mailing.service';
 import { TokenService } from 'src/common/token/token.service';
 import { CacheModule } from 'src/common/cache/cache.module';
+import { GoogleStrategy } from './strategy/google.strategy';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, MailingService, TokenService],
+  providers: [AuthService, GoogleStrategy, MailingService, TokenService],
   imports: [JwtModule.register({}), CacheModule],
   exports: [AuthService],
 })

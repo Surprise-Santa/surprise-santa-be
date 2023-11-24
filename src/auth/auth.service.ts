@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotAcceptableException,
@@ -15,12 +16,15 @@ import { TokenService } from 'src/common/token/token.service';
 import { TokenType } from 'src/common/token/interfaces';
 import { User } from '@prisma/client';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { GoogleStrategy } from './strategy/google.strategy';
+import { ClientGoogleRegisterDto } from './dto/client-google-auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
+    private googleStrategy: GoogleStrategy,
     private jwt: JwtService,
     private messageService: MailingService,
     private tokenService: TokenService,
@@ -138,5 +142,56 @@ export class AuthService {
     } catch (err) {
       throw new UnauthorizedException(err.message);
     }
+  }
+
+  async handleAuthGoogle(req: any) {
+    if (req.user) {
+      throw new BadRequestException('No google account found!');
+    }
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: req.user.email },
+    });
+
+    return existingUser;
+  }
+
+  async clientSocialRegister({ accessToken, ...dto }: ClientGoogleRegisterDto) {
+    const googleUser = await this.googleStrategy.clientValidate(accessToken);
+
+    const user: SignupDto = {
+      ...dto,
+      firstName: googleUser.firstName,
+      lastName: googleUser.lastName,
+      email: googleUser.email,
+    };
+
+    const newUser = await this.signup(user);
+    const token = await this.signToken(newUser.id, googleUser.email);
+
+    return { token, user: newUser };
+  }
+
+  async clientSocialLogin(accessToken: string) {
+    const googleUser = await this.googleStrategy.clientValidate(accessToken);
+
+    if (!googleUser)
+      throw new NotAcceptableException(
+        'Cannot authenticate user. Kindly register with your social account.',
+      );
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: googleUser.email },
+    });
+
+    if (!existingUser)
+      throw new NotAcceptableException(
+        'Cannot authenticate user. Kindly register with your social account.',
+      );
+
+    const token = await this.signToken(existingUser.id, googleUser.email);
+    delete existingUser.password;
+
+    return { token, user: existingUser };
   }
 }
