@@ -17,6 +17,15 @@ export class MailingService {
     return { message: 'Test email successfully sent' };
   }
 
+  async sendWelcomeEmail(email: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Welcome onboard to SecretSanta',
+      template: 'welcomeUserEmail',
+      context: { email },
+    });
+  }
+
   async sendResetToken({ email, firstName, link }: IResetPassword) {
     await this.mailerService.sendMail({
       to: email,
