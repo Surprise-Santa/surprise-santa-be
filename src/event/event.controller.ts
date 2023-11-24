@@ -9,12 +9,14 @@ import {
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { JwtGuard } from '@@/auth/guard/auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetRequestUser } from '@@/common/decorators/get-user.decorator';
 import { User } from '@prisma/client';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
+import { ApiTag } from '@@/common/interfaces';
 
+@ApiTags(ApiTag.EVENT)
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
 @Controller('event')
