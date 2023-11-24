@@ -41,6 +41,11 @@ const config = {
     url: env.require('DATABASE_URL'),
   },
   environment: env.require('NODE_ENV', 'development'),
+  googleAuth: {
+    clientId: env('GOOGLE_CLIENT_ID'),
+    clientSecret: env('GOOGLE_CLIENT_SECRET'),
+    callback: env('GOOGLE_CALLBACK_URL'),
+  },
   jwt: {
     secret: env.require('JWT_SECRET'),
     expiresIn: parseInt(env('JWT_EXPIRES_IN', 60 * 60)),

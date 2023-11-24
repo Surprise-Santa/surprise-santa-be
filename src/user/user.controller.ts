@@ -28,6 +28,11 @@ export class UserController {
     private authService: AuthService,
   ) {}
 
+  @Get('/')
+  async getMyInfo(@GetRequestUser() user: User) {
+    return this.userService.getUserInfo(user);
+  }
+
   @ApiConsumes('multipart/form-data')
   @Post('/profile-pic')
   @UseInterceptors(FileInterceptor('picture'))
@@ -39,13 +44,6 @@ export class UserController {
     return this.userService.uploadProfilePic(picture, user);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtGuard)
-  @Get('/my-info')
-  async getMyInfo(@GetRequestUser() user: User) {
-    return this.userService.getUserInfo(user);
-  }
-  
   @ApiResponseMeta({ message: 'Password Changed Successfully!' })
   @Post('/change-password')
   async changePassword(
