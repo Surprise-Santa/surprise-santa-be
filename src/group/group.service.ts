@@ -58,7 +58,7 @@ export class GroupService {
     if (!foundUser) throw new NotFoundException('User not found');
 
     try {
-      await this.prisma.$transaction(async () => {
+      return await this.prisma.$transaction(async () => {
         const uploadLogo: any = logoUrl
           ? await this.cloudinaryService
               .uploadLogo(logoUrl, user.id)
