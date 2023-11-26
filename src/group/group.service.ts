@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -21,29 +22,87 @@ export class GroupService {
       where: {
         userId: user.id,
       },
-      include: { group: { include: { members: true } } },
+      select: {
+        group: {
+          include: {
+            members: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
     });
-    return groups;
+
+    const result = groups.map(({ group }) => {
+      const transformedMembers = group.members.map(({ user, ...member }) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = user;
+        return { ...member, user: userWithoutPassword };
+      });
+
+      return { ...group, members: transformedMembers };
+    });
+
+    return result;
   }
 
   async getGroupById(id: string, user: User) {
-    const group = await this.prisma.groupMember.findFirst({
-      where: { userId: user.id },
-      include: { group: true },
+    const groupMember = await this.prisma.groupMember.findFirst({
+      where: { userId: user.id, groupId: id },
+    });
+
+    if (!groupMember) throw new ForbiddenException('Cannot view group');
+
+    const group = await this.prisma.group.findFirst({
+      where: { id },
+      include: {
+        members: {
+          select: {
+            user: true,
+          },
+        },
+      },
     });
 
     if (!group) throw new NotFoundException('Group not found');
 
-    return group;
+    const groupMembers = group.members.map(({ user, ...member }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = user;
+      return { ...member, user: userWithoutPassword };
+    });
+
+    return { ...group, members: groupMembers };
   }
 
   async getMyCreatedGroups(user: User) {
     const groups = await this.prisma.group.findMany({
       where: { createdBy: user.id },
-      include: { members: true, events: true },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
 
-    return groups;
+    const result = groups.map(({ members, ...groupData }) => {
+      const transformedMembers = members.map(({ user, ...member }) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = user;
+        return { ...member, user: userWithoutPassword };
+      });
+
+      return {
+        ...groupData,
+        members: transformedMembers,
+      };
+    });
+
+    return result;
   }
 
   async createGroup(
@@ -105,7 +164,7 @@ export class GroupService {
     if (existingMember)
       throw new BadRequestException('You are already a member of this group');
 
-    return await this.prisma.groupMember.create({
+    await this.prisma.groupMember.create({
       data: {
         userId: user.id,
         groupId: group.id,

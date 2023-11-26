@@ -1,20 +1,18 @@
 import {
   ArrayMinSize,
-  IsArray,
   IsBoolean,
+  IsOptional,
   IsUUID,
   ValidateIf,
-  ValidateNested,
 } from 'class-validator';
 
 export class AddEventParticipantsDto {
-  @IsArray()
   @ArrayMinSize(1)
-  @ValidateNested({ each: true })
   @IsUUID(undefined, { each: true })
   @ValidateIf((obj, val) => !!val || !obj.all)
   participants: string[];
 
   @IsBoolean()
-  all: boolean;
+  @IsOptional()
+  all?: boolean;
 }
