@@ -42,6 +42,15 @@ export class EventController {
     return this.eventService.createEvent(dto, user);
   }
 
+  @ApiResponseMeta({ message: 'You have joined this event successfully' })
+  @Post('/:eventId/join')
+  async joinEvent(
+    @Param('eventId', ParseUUIDPipe) id: string,
+    @GetRequestUser() user: User,
+  ) {
+    return this.eventService.joinGroup(id, user.id);
+  }
+
   @ApiResponseMeta({ message: 'Added successfully' })
   @Post('/:eventId/add-participants')
   async addParticipants(
