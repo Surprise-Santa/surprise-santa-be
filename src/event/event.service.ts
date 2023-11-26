@@ -81,7 +81,7 @@ export class EventService {
     });
   }
 
-  async joinGroup(eventId: string, userId: string) {
+  async joinEvent(eventId: string, userId: string) {
     const event = await this.prisma.event.findFirst({
       where: {
         id: eventId,

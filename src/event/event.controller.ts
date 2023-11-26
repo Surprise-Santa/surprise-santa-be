@@ -48,7 +48,7 @@ export class EventController {
     @Param('eventId', ParseUUIDPipe) id: string,
     @GetRequestUser() user: User,
   ) {
-    return this.eventService.joinGroup(id, user.id);
+    return this.eventService.joinEvent(id, user.id);
   }
 
   @ApiResponseMeta({ message: 'Added successfully' })
