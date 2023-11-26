@@ -9,6 +9,7 @@ import { PrismaService } from 'src/common/database/prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { User } from '@prisma/client';
 import { CloudinaryService } from '@@/common/cloudinary/cloudinary.service';
+import { AppUtilities } from '../common/utilities';
 
 @Injectable()
 export class GroupService {
@@ -116,6 +117,15 @@ export class GroupService {
 
     if (!foundUser) throw new NotFoundException('User not found');
 
+    let groupLink = AppUtilities.generateShortCode(6);
+    const existingLink = await this.prisma.group.findUnique({
+      where: { groupLink },
+    });
+
+    while (existingLink) {
+      groupLink = AppUtilities.generateShortCode(6);
+    }
+
     try {
       return await this.prisma.$transaction(async () => {
         const uploadLogo: any = logoUrl
@@ -131,6 +141,7 @@ export class GroupService {
         const group = await this.prisma.group.create({
           data: {
             ...dto,
+            groupLink,
             logoUrl: logosUrl,
             owner: { connect: { id: user.id } },
             members: { create: { user: { connect: { id: user.id } } } },
@@ -142,7 +153,9 @@ export class GroupService {
       });
     } catch (error) {
       console.log(error);
-      throw new ServiceUnavailableException('Failed to create group');
+      throw new ServiceUnavailableException(
+        'Failed to create group, The group name already exist',
+      );
     }
   }
   catch(error) {
