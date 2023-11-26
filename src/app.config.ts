@@ -61,6 +61,8 @@ const config = {
   redis: {
     url: env('REDIS_URL'),
     ttl: env('REDIS_TTL'),
+    host: env.require('REDIS_HOST'),
+    port: parseInt(env('REDIS_PORT', '6379')),
   },
   swagger: {
     user: {
