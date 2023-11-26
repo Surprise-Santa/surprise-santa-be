@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateGroupDto {
@@ -9,6 +9,9 @@ export class CreateGroupDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiHideProperty()
+  groupLink: string;
 
   @ApiProperty({ type: 'string', format: 'binary' })
   @IsOptional()
