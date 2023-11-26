@@ -17,13 +17,18 @@ import { JwtGuard } from '@@/auth/guard/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '@prisma/client';
 import { ApiTag } from '@@/common/interfaces';
+import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
+import { EventService } from '@@/event/event.service';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
 @ApiTags(ApiTag.GROUP)
 @Controller('group')
 export class GroupController {
-  constructor(private groupService: GroupService) {}
+  constructor(
+    private groupService: GroupService,
+    private eventService: EventService,
+  ) {}
 
   @Get('/my-groups')
   async getMyGroups(@GetRequestUser() user: User) {
@@ -35,6 +40,11 @@ export class GroupController {
     return await this.groupService.getMyCreatedGroups(user);
   }
 
+  @Get('/:id/events')
+  async getGroupEvents(@Param('id', ParseUUIDPipe) id: string) {
+    return this.eventService.getGroupEvents(id);
+  }
+
   @Get('/:id')
   async getGroupById(
     @Param('id', ParseUUIDPipe) id: string,
@@ -43,6 +53,15 @@ export class GroupController {
     return await this.groupService.getGroupById(id, user);
   }
 
+  @Get('/:id/events/:eventId')
+  async getGroupEvent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+  ) {
+    return this.eventService.getGroupEvent(id, eventId);
+  }
+
+  @ApiResponseMeta({ message: 'Successfully joined the group' })
   @Post('/:id/join')
   async joinGroup(
     @Param('id', ParseUUIDPipe) id: string,

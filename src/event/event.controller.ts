@@ -15,6 +15,7 @@ import { User } from '@prisma/client';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
 import { ApiTag } from '@@/common/interfaces';
+import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
 
 @ApiTags(ApiTag.EVENT)
 @ApiBearerAuth()
@@ -41,6 +42,7 @@ export class EventController {
     return this.eventService.createEvent(dto, user);
   }
 
+  @ApiResponseMeta({ message: 'Added successfully' })
   @Post('/:eventId/add-participants')
   async addParticipants(
     @Param('eventId', ParseUUIDPipe) id: string,

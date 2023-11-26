@@ -18,6 +18,10 @@ export class EventService {
     });
   }
 
+  async getGroupEvents(groupId: string) {
+    return await this.prisma.event.findMany({ where: { groupId } });
+  }
+
   async getEvent(eventId: string, user: User) {
     const event = await this.prisma.eventParticipant.findFirst({
       where: { eventId, userId: user.id },
@@ -29,6 +33,10 @@ export class EventService {
     if (!event) throw new NotAcceptableException('Invalid event!');
 
     return event;
+  }
+
+  async getGroupEvent(groupId: string, eventId: string) {
+    return this.prisma.event.findFirst({ where: { groupId, id: eventId } });
   }
 
   async createEvent({ groupId, ...dto }: CreateEventDto, user: User) {
@@ -48,12 +56,22 @@ export class EventService {
       eventLink = AppUtilities.generateShortCode(6);
     }
 
-    return await this.prisma.event.create({
-      data: {
-        groupId,
-        eventLink,
-        ...dto,
-      },
+    return await this.prisma.$transaction(async (prisma: PrismaClient) => {
+      const event = await prisma.event.create({
+        data: {
+          groupId,
+          eventLink,
+          ...dto,
+        },
+      });
+      await prisma.eventParticipant.create({
+        data: {
+          eventId: event.id,
+          userId: user.id,
+        },
+      });
+
+      return event;
     });
   }
 
@@ -82,25 +100,26 @@ export class EventService {
         where: { id: group.id },
       });
 
-      return await this.prisma.$transaction(async (prisma: PrismaClient) => {
-        const promises = members.map((member) =>
-          prisma.eventParticipant.create({
-            data: { eventId, userId: member.id },
-          }),
-        );
+      if (!members.length) {
+        return [];
+      }
 
-        return Promise.all(promises);
+      return this.prisma.eventParticipant.createMany({
+        data: members.map((member) => ({ eventId, userId: member.id })),
+        skipDuplicates: true,
       });
     }
 
-    return await this.prisma.$transaction(async (prisma: PrismaClient) => {
-      const promises = validParticipants.map((participant) =>
-        prisma.eventParticipant.create({
-          data: { eventId, userId: participant.id },
-        }),
-      );
+    if (!validParticipants.length) {
+      return [];
+    }
 
-      return Promise.all(promises);
+    return this.prisma.eventParticipant.createMany({
+      data: validParticipants.map((participant) => ({
+        eventId,
+        userId: participant.id,
+      })),
+      skipDuplicates: true,
     });
   }
 }
