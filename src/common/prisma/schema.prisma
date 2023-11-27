@@ -43,6 +43,7 @@ model Group {
   description String?       @db.VarChar
   isPublic    Boolean       @default(false) @db.Boolean
   logoUrl     String?       @db.VarChar
+  groupLink   String?       @unique @db.VarChar
   members     GroupMember[]
   events      Event[]
   status      Boolean       @default(true)

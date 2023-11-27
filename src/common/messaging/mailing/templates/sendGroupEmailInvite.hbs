@@ -1,0 +1,65 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title></title>
+    <link rel='preconnect' href='https://fonts.googleapis.com' />
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <link
+      href='https://fonts.googleapis.com/css2?family=Proza+Libre:wght@400;500;700&family=Open+Sans:wght@400;500;700&display=swap'
+      rel='stylesheet'
+    />
+    <style>
+      * { box-sizing: border-box; padding: 0; margin: 0; } body { width: 100%;
+      font-family: 'Open Sans', sans-serif; font-size: 16px; background: #eee;
+      line-height: 1.5; display: block; padding: 20px } h1,h2,h3,h4 {
+      font-family: 'Proza Libre', sans-serif; color: #5D9C59 } h1 {font-size:
+      48px; font-weight: 700;} a { color: #5D9C59} button { background-color:
+      #DF2E38, color: #fff; border-radius: 4px} h2 {font-size: 36px;
+      font-weight: 500;} .site-title { display: block; font-weight: 900;
+      font-size: 30px; margin: 20px 0; } .container { position: relative;
+      padding: 50px 20px; text-decoration: none; max-width: 80vw; width: 500px;
+      margin: 10px auto; border-radius: 8px; background-color: #fff; box-shadow:
+      0px 2px 2px 4px rgba(0,0,0,0.05) } .footer { background-color: #DDF7E3;
+      color: #FFF } @media screen and (max-width: 600px) { .container {
+      max-width: 90%; } h1 { font-size: 32px !important; line-height: 32px
+      !important; } body { font-size: 16px; min-height: 400px; } }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h2 style='text-align: center; margin-bottom: 40px; line-height: 1'>Group
+        Invite from
+        {{firstName}}</h2>
+      <section>
+        <h3 style='margin-bottom: 20px; line-height: 1'>Hello 👋🏽</h3>
+        <p>This is an invite link from
+          {{firstName}}
+          to join
+          {{name}}
+          group. Kindly click the button below to join the group.</p>
+        <button
+          style='display: block; margin: 30px auto; padding: 10px 20px; border: none; background-color: #5D9C59; '
+        ><a href={{groupLink}} style='text-decoration: none; color: white'>Join
+            group</a></button>
+
+        <p>You can copy the link also:
+          {{groupLink}}</p>
+      </section>
+      <section style='margin-top: 40px'>
+        <p>Cheers,</p>
+        <p>Claus from
+          <span
+            style='color: #DF2E38; font-weight: 700'
+          >SecretSanta!!!</span></p>
+      </section>
+    </div>
+    <div
+      class='container footer'
+      style='text-align: center; padding-block: 30px'
+    >
+      <h3 style='color: #DF2E38'>Want to make enquiries?</h3>
+      <a href='#'>Send us a message</a>
+    </div>
+  </body>
+</html>

@@ -30,7 +30,7 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
-  async signup({ password, email, ...rest }: SignupDto) {
+  async signup({ password, email, firstName, ...rest }: SignupDto) {
     const hash = await bcrypt.hash(password, 10);
 
     try {
@@ -38,20 +38,21 @@ export class AuthService {
         data: {
           ...rest,
           email,
+          firstName,
           password: hash,
         },
       });
 
       delete user.password;
 
-      await this.messageService.sendWelcomeEmail(email);
+      this.messageService.sendWelcomeEmail(email, firstName);
 
       return user;
     } catch (err) {
       if (err.code === 'P2002') {
         throw new ForbiddenException('Email address already exists');
       }
-
+      console.log(err);
       throw err;
     }
   }

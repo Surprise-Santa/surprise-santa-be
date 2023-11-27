@@ -17,12 +17,26 @@ export class MailingService {
     return { message: 'Test email successfully sent' };
   }
 
-  async sendWelcomeEmail(email: string) {
+  async sendWelcomeEmail(email: string, firstName: string) {
     await this.mailerService.sendMail({
       to: email,
       subject: 'Welcome onboard to SecretSanta',
       template: 'welcomeUserEmail',
-      context: { email },
+      context: { email, firstName },
+    });
+  }
+
+  async sendGroupEmailInvite(
+    email: string,
+    firstName: string,
+    name: string,
+    groupLink: string,
+  ) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Group Invite',
+      template: 'sendGroupEmailInvite',
+      context: { email, firstName, name, groupLink },
     });
   }
 

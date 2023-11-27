@@ -4,17 +4,22 @@ import {
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/common/database/prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { User } from '@prisma/client';
 import { CloudinaryService } from '@@/common/cloudinary/cloudinary.service';
+import { AppUtilities } from '../common/utilities';
+import { SendEmailInviteDto } from './dto/send-email-invite.dto';
+import { MailingService } from '../common/messaging/mailing/mailing.service';
 
 @Injectable()
 export class GroupService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
+    private messageService: MailingService,
   ) {}
 
   async getMyGroups(user: User) {
@@ -116,6 +121,15 @@ export class GroupService {
 
     if (!foundUser) throw new NotFoundException('User not found');
 
+    let groupLink = AppUtilities.generateShortCode(6);
+    const existingLink = await this.prisma.group.findUnique({
+      where: { groupLink },
+    });
+
+    while (existingLink) {
+      groupLink = AppUtilities.generateShortCode(6);
+    }
+
     try {
       return await this.prisma.$transaction(async () => {
         const uploadLogo: any = logoUrl
@@ -131,6 +145,7 @@ export class GroupService {
         const group = await this.prisma.group.create({
           data: {
             ...dto,
+            groupLink,
             logoUrl: logosUrl,
             owner: { connect: { id: user.id } },
             members: { create: { user: { connect: { id: user.id } } } },
@@ -142,7 +157,9 @@ export class GroupService {
       });
     } catch (error) {
       console.log(error);
-      throw new ServiceUnavailableException('Failed to create group');
+      throw new ServiceUnavailableException(
+        'Failed to create group, The group name already exist',
+      );
     }
   }
   catch(error) {
@@ -170,5 +187,48 @@ export class GroupService {
         groupId: group.id,
       },
     });
+  }
+
+  async SendEmailInvite(
+    id: string,
+    { emails }: SendEmailInviteDto,
+    user: User,
+  ) {
+    const isUser = await this.prisma.user.findFirst({
+      where: { id: user.id },
+    });
+
+    if (!isUser)
+      throw new UnauthorizedException('No user found. Please signup or login');
+
+    const group = await this.prisma.group.findFirst({
+      where: { id },
+      select: {
+        name: true,
+        groupLink: true,
+        members: { select: { user: true } },
+      },
+    });
+
+    if (!group) throw new NotFoundException('This group does not exist');
+
+    const groupMembers = group.members.map((member) => ({
+      email: member.user.email,
+    }));
+
+    const existingEmail = groupMembers.map((member) => member.email);
+    const emailsToInvite = emails.filter(
+      (email) => !existingEmail.includes(email),
+    );
+
+    const emailsToInvitePromises = emailsToInvite.map((email) =>
+      this.messageService.sendGroupEmailInvite(
+        email,
+        user.firstName,
+        group.name,
+        group.groupLink,
+      ),
+    );
+    await Promise.all(emailsToInvitePromises);
   }
 }

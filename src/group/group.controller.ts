@@ -19,6 +19,7 @@ import { User } from '@prisma/client';
 import { ApiTag } from '@@/common/interfaces';
 import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
 import { EventService } from '@@/event/event.service';
+import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -79,5 +80,15 @@ export class GroupController {
     @GetRequestUser() user: User,
   ) {
     return this.groupService.createGroup(dto, logoUrl, user);
+  }
+
+  @ApiResponseMeta({ message: 'Email invite sent successfully' })
+  @Post('/:id/email-invite')
+  async SendEmailInvite(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SendEmailInviteDto,
+    @GetRequestUser() user: User,
+  ) {
+    return this.groupService.SendEmailInvite(id, dto, user);
   }
 }
