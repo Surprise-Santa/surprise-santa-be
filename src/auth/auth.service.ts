@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
-import bcrypt from 'bcrypt';
 import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -14,10 +13,9 @@ import { LoginDto } from './dto/login.dto';
 import { MailingService } from 'src/common/messaging/mailing/mailing.service';
 import { TokenService } from 'src/common/token/token.service';
 import { TokenType } from 'src/common/token/interfaces';
-import { User } from '@prisma/client';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { ClientGoogleRegisterDto } from './dto/client-google-auth.dto';
+import { AppUtilities } from '@@/common/utilities';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +29,7 @@ export class AuthService {
   ) {}
 
   async signup({ password, email, firstName, ...rest }: SignupDto) {
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await AppUtilities.hashPassword(password);
 
     try {
       const user = await this.prisma.user.create({
@@ -62,7 +60,10 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('User not found');
 
-    const verifyPass = await bcrypt.compare(password, user.password);
+    const verifyPass = await AppUtilities.comparePasswords(
+      password,
+      user.password,
+    );
 
     if (!verifyPass) throw new UnauthorizedException('Incorrect Credentials');
 
@@ -116,36 +117,12 @@ export class AuthService {
       throw new NotAcceptableException('Invalid Token');
     }
 
-    const hash = await bcrypt.hash(newPassword, 10);
+    const hash = await AppUtilities.hashPassword(newPassword);
 
     await this.prisma.user.update({
       where: { email: validToken.id },
       data: { password: hash },
     });
-  }
-
-  async changePassword(
-    { id }: User,
-    { currentPassword, newPassword }: ChangePasswordDto,
-  ) {
-    try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
-
-      if (!user) throw new UnauthorizedException('User not found');
-
-      const isPassMatch = await bcrypt.compare(currentPassword, user.password);
-
-      if (!isPassMatch) throw new ForbiddenException('Incorrect password');
-
-      const hash = await bcrypt.hash(newPassword, 10);
-
-      await this.prisma.user.update({
-        where: { id },
-        data: { password: hash },
-      });
-    } catch (err) {
-      throw new UnauthorizedException(err.message);
-    }
   }
 
   async handleAuthGoogle(req: any) {

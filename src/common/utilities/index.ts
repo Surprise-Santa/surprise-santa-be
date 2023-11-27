@@ -7,6 +7,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { customAlphabet } from 'nanoid';
+import bcrypt from 'bcrypt';
 
 const CUSTOM_CHARS =
   '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -16,6 +17,14 @@ export class AppUtilities {
     const nanoid = customAlphabet(CUSTOM_CHARS, charLen);
 
     return nanoid();
+  }
+
+  public static comparePasswords(password: string, hash: string) {
+    return bcrypt.compare(password, hash);
+  }
+
+  public static hashPassword(password: string, rounds: number = 10) {
+    return bcrypt.hash(password, rounds);
   }
 
   public static handleException(error: any): Error {

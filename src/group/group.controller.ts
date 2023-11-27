@@ -72,14 +72,14 @@ export class GroupController {
   }
 
   @ApiConsumes('multipart/form-data')
-  @Post('/')
-  @UseInterceptors(FileInterceptor('logoUrl'))
+  @Post('/create')
+  @UseInterceptors(FileInterceptor('logo'))
   async createGroup(
     @Body() dto: CreateGroupDto,
-    @UploadedFile() logoUrl: Express.Multer.File,
+    @UploadedFile() logo: Express.Multer.File,
     @GetRequestUser() user: User,
   ) {
-    return this.groupService.createGroup(dto, logoUrl, user);
+    return this.groupService.createGroup(dto, logo, user);
   }
 
   @ApiResponseMeta({ message: 'Email invite sent successfully' })

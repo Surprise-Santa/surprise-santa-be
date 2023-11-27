@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotAcceptableException,
@@ -8,6 +9,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { AppUtilities } from '@@/common/utilities';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
 import { PrismaService } from '@@/common/database/prisma/prisma.service';
+import moment from 'moment';
 
 @Injectable()
 export class EventService {
@@ -62,6 +64,20 @@ export class EventService {
       eventLink = AppUtilities.generateShortCode(6);
     }
 
+    const invalidStartDate = moment(dto.startDate).isBefore(Date.now());
+
+    if (invalidStartDate)
+      throw new BadRequestException('Event cannot start before today');
+
+    if (dto.endDate) {
+      const invalidEndDate = moment(dto.endDate).isSameOrBefore(dto.startDate);
+
+      if (invalidEndDate)
+        throw new BadRequestException(
+          'Event must end at least 24 hours after start date',
+        );
+    }
+
     return await this.prisma.$transaction(async (prisma: PrismaClient) => {
       const event = await prisma.event.create({
         data: {
@@ -87,6 +103,7 @@ export class EventService {
         id: eventId,
       },
       select: {
+        startDate: true,
         group: {
           select: {
             members: {
@@ -104,6 +121,11 @@ export class EventService {
     );
 
     if (!validEvent) throw new ForbiddenException('Cannot join this event');
+
+    const eventStarted = moment(Date.now()).isSameOrAfter(event.startDate);
+
+    if (eventStarted)
+      throw new ForbiddenException('Cannot join event because it has started');
 
     await this.prisma.eventParticipant.create({
       data: {
