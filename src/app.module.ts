@@ -18,6 +18,7 @@ import { TokenService } from './common/token/token.service';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 import { GoogleStrategy } from './auth/strategy/google.strategy';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     UserModule,
     CloudinaryModule,
     WishlistModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [
