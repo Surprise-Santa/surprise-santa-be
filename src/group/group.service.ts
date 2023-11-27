@@ -112,7 +112,7 @@ export class GroupService {
 
   async createGroup(
     dto: CreateGroupDto,
-    logoUrl: Express.Multer.File,
+    logo: Express.Multer.File,
     user: User,
   ) {
     const foundUser = await this.prisma.user.findUnique({
@@ -132,12 +132,10 @@ export class GroupService {
 
     try {
       return await this.prisma.$transaction(async () => {
-        const uploadLogo: any = logoUrl
-          ? await this.cloudinaryService
-              .uploadLogo(logoUrl, user.id)
-              .catch(() => {
-                throw new BadRequestException('Invalid file type');
-              })
+        const uploadLogo: any = logo
+          ? await this.cloudinaryService.uploadLogo(logo, user.id).catch(() => {
+              throw new BadRequestException('Invalid file type');
+            })
           : null;
 
         const logosUrl = uploadLogo?.secure_url || '';
@@ -162,7 +160,7 @@ export class GroupService {
       );
     }
   }
-  catch(error) {
+  catch(error: any) {
     console.log(error);
     throw new ServiceUnavailableException('Failed to create group');
   }

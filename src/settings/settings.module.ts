@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { SettingsService } from './settings.service';
+import { ProfileSettingService } from './profile/profile.service';
+import { GroupSettingService } from './group/group.service';
+import { EventService } from './event/event.service';
 import { SettingsController } from './settings.controller';
+import { CloudinaryModule } from '@@/common/cloudinary/cloudinary.module';
 
 @Module({
-  providers: [SettingsService],
-  controllers: [SettingsController]
+  imports: [CloudinaryModule],
+  providers: [ProfileSettingService, GroupSettingService, EventService],
+  controllers: [SettingsController],
 })
 export class SettingsModule {}

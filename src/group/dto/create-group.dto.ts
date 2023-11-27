@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateGroupDto {
-  @IsOptional()
+  @IsString()
   @IsNotEmpty()
   name: string;
 
@@ -15,5 +15,5 @@ export class CreateGroupDto {
 
   @ApiProperty({ type: 'string', format: 'binary' })
   @IsOptional()
-  logoUrl?: Express.Multer.File;
+  logo?: Express.Multer.File;
 }
