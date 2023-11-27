@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
-import { ProfileSettingDto } from '../dto/profile-setting.dto';
+import { ProfileSettingDto } from './dto/profile-setting.dto';
 import { CloudinaryService } from '@@/common/cloudinary/cloudinary.service';
 
 @Injectable()

@@ -10,7 +10,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ProfileSettingService } from './profile/profile.service';
-import { ProfilePicDto, ProfileSettingDto } from './dto/profile-setting.dto';
+import {
+  ProfilePicDto,
+  ProfileSettingDto,
+} from './profile/dto/profile-setting.dto';
 import { GetRequestUser } from '@@/common/decorators/get-user.decorator';
 import { User } from '@prisma/client';
 import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
@@ -21,6 +24,7 @@ import { ApiTag } from '@@/common/interfaces';
 import { JwtGuard } from '@@/auth/guard/auth.guard';
 import { EditGroupDto } from './group/dto/edit-group.dto';
 import { GroupLogoDto } from './group/dto/group-logo.dto';
+import { EditEventDto } from './event/dto/edit-event.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -70,7 +74,7 @@ export class SettingsController {
 
   @ApiResponseMeta({ message: 'Logo uploaded successfully' })
   @ApiConsumes('multipart/form-data')
-  @Post('/profile/upload-group-logo')
+  @Post('/group/upload-group-logo')
   @UseInterceptors(FileInterceptor('logo'))
   async uploadGroupLogo(
     @Body() dto: GroupLogoDto,
@@ -78,5 +82,11 @@ export class SettingsController {
     @GetRequestUser() user: User,
   ) {
     return this.profileSettings.uploadProfilePic(logo, user);
+  }
+
+  @ApiResponseMeta({ message: 'Event details updated successfully' })
+  @Patch('/event/edit-event')
+  async editEvent(@Body() dto: EditEventDto, @GetRequestUser() user: User) {
+    return this.eventSettings.editEvent(dto, user);
   }
 }
