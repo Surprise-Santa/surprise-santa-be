@@ -52,8 +52,8 @@ export class AuthService {
       if (err.code === 'P2002') {
         throw new ForbiddenException('Email address already exists');
       }
-
-      throw err.message;
+      console.log(err);
+      throw err;
     }
   }
 
