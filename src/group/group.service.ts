@@ -210,6 +210,8 @@ export class GroupService {
       },
     });
 
+    if (!group) throw new NotFoundException('This group does not exist');
+
     const groupMembers = group.members.map((member) => ({
       email: member.user.email,
     }));
@@ -219,13 +221,14 @@ export class GroupService {
       (email) => !existingEmail.includes(email),
     );
 
-    for (const email of emailsToInvite) {
-      await this.messageService.sendGroupEmailInvite(
+    const emailsToInvitePromises = emailsToInvite.map((email) =>
+      this.messageService.sendGroupEmailInvite(
         email,
         user.firstName,
         group.name,
         group.groupLink,
-      );
-    }
+      ),
+    );
+    await Promise.all(emailsToInvitePromises);
   }
 }

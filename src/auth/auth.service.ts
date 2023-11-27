@@ -45,7 +45,7 @@ export class AuthService {
 
       delete user.password;
 
-      await this.messageService.sendWelcomeEmail(email, firstName);
+      this.messageService.sendWelcomeEmail(email, firstName);
 
       return user;
     } catch (err) {
@@ -53,7 +53,7 @@ export class AuthService {
         throw new ForbiddenException('Email address already exists');
       }
 
-      throw err;
+      throw err.message;
     }
   }
 
