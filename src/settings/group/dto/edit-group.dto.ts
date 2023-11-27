@@ -21,5 +21,5 @@ export class EditGroupDto {
 
   @IsOptional()
   @IsBoolean()
-  privacy?: boolean;
+  isPublic?: boolean;
 }

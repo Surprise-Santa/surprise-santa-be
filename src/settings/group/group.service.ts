@@ -16,7 +16,7 @@ export class GroupSettingService {
     private cloudinary: CloudinaryService,
   ) {}
 
-  async editGroupInfo({ groupId, privacy, ...dto }: EditGroupDto, user: User) {
+  async editGroupInfo({ groupId, isPublic, ...dto }: EditGroupDto, user: User) {
     const userGroup = await this.prisma.group.findFirst({
       where: { id: groupId, createdBy: user.id },
     });
@@ -27,7 +27,7 @@ export class GroupSettingService {
       where: { id: groupId },
       data: {
         ...dto,
-        ...(privacy && { isPublic: privacy }),
+        ...(isPublic && { isPublic }),
       },
     });
   }
