@@ -12,14 +12,14 @@ import { User } from '@prisma/client';
 import { CloudinaryService } from '@@/common/cloudinary/cloudinary.service';
 import { AppUtilities } from '../common/utilities';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
-import { MailingService } from '../common/messaging/mailing/mailing.service';
+import { MessagingQueueProducer } from '../common/messaging/queue/producer';
 
 @Injectable()
 export class GroupService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
-    private messageService: MailingService,
+    private messagingQueue: MessagingQueueProducer,
   ) {}
 
   async getMyGroups(user: User) {
@@ -209,12 +209,12 @@ export class GroupService {
     );
 
     const emailsToInvitePromises = emailsToInvite.map((email) =>
-      this.messageService.sendGroupEmailInvite(
+      this.messagingQueue.queueGroupInviteEmail({
         email,
-        user.firstName,
-        group.name,
-        group.groupLink,
-      ),
+        firstName: user.firstName,
+        groupName: group.name,
+        groupLink: group.groupLink,
+      }),
     );
     await Promise.all(emailsToInvitePromises);
   }
