@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { IResetPassword } from './interfaces';
+import {
+  IGroupInviteEmail,
+  IResetPassword,
+  IWelcomeEmail,
+  Template,
+} from './interfaces';
 
 @Injectable()
 export class MailingService {
@@ -17,34 +22,47 @@ export class MailingService {
     return { message: 'Test email successfully sent' };
   }
 
-  async sendWelcomeEmail(email: string, firstName: string) {
+  async sendWelcomeEmail({
+    email,
+    subject = 'Welcome onboard to SecretSanta',
+    template = Template.welcomeUserEmail,
+    firstName,
+  }: IWelcomeEmail) {
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Welcome onboard to SecretSanta',
-      template: 'welcomeUserEmail',
+      subject,
+      template,
       context: { email, firstName },
     });
   }
 
-  async sendGroupEmailInvite(
-    email: string,
-    firstName: string,
-    name: string,
-    groupLink: string,
-  ) {
+  async sendGroupEmailInvite({
+    email,
+    subject = 'Group Invite',
+    template = Template.sendGroupEmailInvite,
+    firstName,
+    name,
+    link,
+  }: IGroupInviteEmail) {
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Group Invite',
-      template: 'sendGroupEmailInvite',
-      context: { email, firstName, name, groupLink },
+      subject,
+      template,
+      context: { email, firstName, name, groupLink: link },
     });
   }
 
-  async sendResetToken({ email, firstName, link }: IResetPassword) {
+  async sendResetToken({
+    email,
+    subject = 'Password Reset Requested',
+    template = Template.passwordResetEmail,
+    firstName,
+    link,
+  }: IResetPassword) {
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Password Reset Requested',
-      template: 'passwordResetEmail',
+      subject,
+      template,
       context: { email, firstName, link },
     });
   }
