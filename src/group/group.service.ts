@@ -155,14 +155,8 @@ export class GroupService {
       });
     } catch (error) {
       console.log(error);
-      throw new ServiceUnavailableException(
-        'Failed to create group, The group name already exist',
-      );
+      throw new ServiceUnavailableException('Failed to create group');
     }
-  }
-  catch(error: any) {
-    console.log(error);
-    throw new ServiceUnavailableException('Failed to create group');
   }
 
   async joinGroup(id: string, user: User) {
@@ -187,7 +181,7 @@ export class GroupService {
     });
   }
 
-  async SendEmailInvite(
+  async sendGroupInvite(
     id: string,
     { emails }: SendEmailInviteDto,
     user: User,
@@ -204,19 +198,14 @@ export class GroupService {
       select: {
         name: true,
         groupLink: true,
-        members: { select: { user: true } },
+        members: { select: { user: { select: { email: true } } } },
       },
     });
 
     if (!group) throw new NotFoundException('This group does not exist');
 
-    const groupMembers = group.members.map((member) => ({
-      email: member.user.email,
-    }));
-
-    const existingEmail = groupMembers.map((member) => member.email);
-    const emailsToInvite = emails.filter(
-      (email) => !existingEmail.includes(email),
+    const emailsToInvite = emails.filter((email) =>
+      group.members.some(({ user }) => user.email !== email),
     );
 
     const emailsToInvitePromises = emailsToInvite.map((email) =>

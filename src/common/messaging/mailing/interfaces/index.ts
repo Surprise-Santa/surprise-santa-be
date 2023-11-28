@@ -18,6 +18,6 @@ export interface IResetPassword extends ISendEmail {
 export interface IWelcomeEmail extends ISendEmail {}
 
 export interface IGroupInviteEmail extends ISendEmail {
-  name: string;
-  link: string;
+  groupName: string;
+  groupLink: string;
 }

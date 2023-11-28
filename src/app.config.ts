@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -15,14 +14,9 @@ env.require = (key: string, defaultValue: any = undefined) => {
   return value;
 };
 
-const folderName =
-  process.env.NODE_ENV === 'production'
-    ? `secret_santa_${process.env.NODE_ENV}`
-    : 'secret_santa_development';
-
 const config = {
   app: {
-    name: 'secret santa',
+    name: 'secret_santa',
     port: parseInt(env('APP_PORT', 4000)),
     hostname: env('APP_HOSTNAME', '0.0.0.0'),
     host: env(
@@ -35,7 +29,7 @@ const config = {
     cloudName: env('CLOUD_NAME'),
     apiKey: env('CLOUD_API_KEY'),
     apiSecret: env('CLOUD_API_SECRET'),
-    folderName,
+    folderName: `secret_santa_${env('NODE_ENV', 'development')}`,
   },
   db: {
     url: env.require('DATABASE_URL'),
