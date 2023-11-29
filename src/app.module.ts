@@ -19,10 +19,21 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 import { GoogleStrategy } from './auth/strategy/google.strategy';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { SettingsModule } from './settings/settings.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
     AuthModule,
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        prefix: `${config.get('environment')}:${config.get('app.name')}`,
+        redis: {
+          host: config.get('redis.host'),
+          port: config.get('redis.port'),
+        },
+      }),
+    }),
     GroupModule,
     CacheModule,
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),

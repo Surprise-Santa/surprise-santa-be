@@ -12,14 +12,14 @@ import { User } from '@prisma/client';
 import { CloudinaryService } from '@@/common/cloudinary/cloudinary.service';
 import { AppUtilities } from '../common/utilities';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
-import { MailingService } from '../common/messaging/mailing/mailing.service';
+import { MessagingQueueProducer } from '../common/messaging/queue/producer';
 
 @Injectable()
 export class GroupService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
-    private messageService: MailingService,
+    private messagingQueue: MessagingQueueProducer,
   ) {}
 
   async getMyGroups(user: User) {
@@ -155,14 +155,8 @@ export class GroupService {
       });
     } catch (error) {
       console.log(error);
-      throw new ServiceUnavailableException(
-        'Failed to create group, The group name already exist',
-      );
+      throw new ServiceUnavailableException('Failed to create group');
     }
-  }
-  catch(error: any) {
-    console.log(error);
-    throw new ServiceUnavailableException('Failed to create group');
   }
 
   async joinGroup(id: string, user: User) {
@@ -187,7 +181,7 @@ export class GroupService {
     });
   }
 
-  async SendEmailInvite(
+  async sendGroupInvite(
     id: string,
     { emails }: SendEmailInviteDto,
     user: User,
@@ -204,28 +198,23 @@ export class GroupService {
       select: {
         name: true,
         groupLink: true,
-        members: { select: { user: true } },
+        members: { select: { user: { select: { email: true } } } },
       },
     });
 
     if (!group) throw new NotFoundException('This group does not exist');
 
-    const groupMembers = group.members.map((member) => ({
-      email: member.user.email,
-    }));
-
-    const existingEmail = groupMembers.map((member) => member.email);
-    const emailsToInvite = emails.filter(
-      (email) => !existingEmail.includes(email),
+    const emailsToInvite = emails.filter((email) =>
+      group.members.some(({ user }) => user.email !== email),
     );
 
     const emailsToInvitePromises = emailsToInvite.map((email) =>
-      this.messageService.sendGroupEmailInvite(
+      this.messagingQueue.queueGroupInviteEmail({
         email,
-        user.firstName,
-        group.name,
-        group.groupLink,
-      ),
+        firstName: user.firstName,
+        groupName: group.name,
+        groupLink: group.groupLink,
+      }),
     );
     await Promise.all(emailsToInvitePromises);
   }

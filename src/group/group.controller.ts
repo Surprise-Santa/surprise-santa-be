@@ -89,6 +89,6 @@ export class GroupController {
     @Body() dto: SendEmailInviteDto,
     @GetRequestUser() user: User,
   ) {
-    return this.groupService.SendEmailInvite(id, dto, user);
+    return this.groupService.sendGroupInvite(id, dto, user);
   }
 }
