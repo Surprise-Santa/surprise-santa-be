@@ -10,12 +10,12 @@ import { PrismaService } from '../common/database/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
-import { MailingService } from 'src/common/messaging/mailing/mailing.service';
 import { TokenService } from 'src/common/token/token.service';
 import { TokenType } from 'src/common/token/interfaces';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { ClientGoogleRegisterDto } from './dto/client-google-auth.dto';
 import { AppUtilities } from '@@/common/utilities';
+import { MessagingQueueProducer } from '../common/messaging/queue/producer';
 
 @Injectable()
 export class AuthService {
@@ -24,8 +24,8 @@ export class AuthService {
     private config: ConfigService,
     private googleStrategy: GoogleStrategy,
     private jwt: JwtService,
-    private messageService: MailingService,
     private tokenService: TokenService,
+    private messagingQueue: MessagingQueueProducer,
   ) {}
 
   async signup({ password, email, firstName, ...rest }: SignupDto) {
@@ -43,7 +43,10 @@ export class AuthService {
 
       delete user.password;
 
-      this.messageService.sendWelcomeEmail(email, firstName);
+      await this.messagingQueue.queueWelcomeEmail({
+        email,
+        firstName,
+      });
 
       return user;
     } catch (err) {
@@ -100,7 +103,7 @@ export class AuthService {
 
     const link = `${baseUrl}/auth/reset-password?token=${token}`;
 
-    return this.messageService.sendResetToken({
+    await this.messagingQueue.queueResetTokenEmail({
       email,
       firstName: user.firstName,
       link,
