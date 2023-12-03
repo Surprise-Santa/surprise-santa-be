@@ -11,7 +11,7 @@
     "schema.generate": "prisma generate --schema=./src/common/prisma/schema.prisma",
     "db.migration.create": "npx prisma migrate dev --create-only --schema=./src/common/prisma/schema.prisma",
     "db.migration.run": "npx prisma migrate deploy --schema=./src/common/prisma/schema.prisma",
-    "apply.updates": "yarn schema.generate && yarn db.migration.run",
+    "apply.updates": "npm run schema.generate && npm run db.migration.run",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
