@@ -8,11 +8,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/common/database/prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { CloudinaryService } from '@@/common/cloudinary/cloudinary.service';
 import { AppUtilities } from '../common/utilities';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 import { MessagingQueueProducer } from '../common/messaging/queue/producer';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class GroupService {
@@ -160,9 +161,10 @@ export class GroupService {
   }
 
   async joinGroup(id: string, user: User) {
-    const group = await this.prisma.group.findUnique({
-      where: { id },
-    });
+    const findUniqueGroupDto: Prisma.GroupFindUniqueArgs = isUUID(id)
+      ? { where: { id } }
+      : { where: { groupLink: id } };
+    const group = await this.prisma.group.findUnique(findUniqueGroupDto);
 
     if (!group) throw new NotFoundException('Group not found');
 
@@ -173,11 +175,12 @@ export class GroupService {
     if (existingMember)
       throw new BadRequestException('You are already a member of this group');
 
-    await this.prisma.groupMember.create({
+    return await this.prisma.groupMember.create({
       data: {
         userId: user.id,
         groupId: group.id,
       },
+      include: { group: { include: { members: true } } },
     });
   }
 

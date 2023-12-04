@@ -9,7 +9,7 @@ import {
   Param,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GroupService } from './group.service';
 import { GetRequestUser } from '@@/common/decorators/get-user.decorator';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -63,11 +63,13 @@ export class GroupController {
   }
 
   @ApiResponseMeta({ message: 'Successfully joined the group' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'Group ID or link (shortcode)',
+  })
   @Post('/:id/join')
-  async joinGroup(
-    @Param('id', ParseUUIDPipe) id: string,
-    @GetRequestUser() user: User,
-  ) {
+  async joinGroup(@Param('id') id: string, @GetRequestUser() user: User) {
     return this.groupService.joinGroup(id, user);
   }
 
