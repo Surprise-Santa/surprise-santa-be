@@ -175,11 +175,12 @@ export class GroupService {
     if (existingMember)
       throw new BadRequestException('You are already a member of this group');
 
-    await this.prisma.groupMember.create({
+    return await this.prisma.groupMember.create({
       data: {
         userId: user.id,
         groupId: group.id,
       },
+      include: { group: { include: { members: true } } },
     });
   }
 
