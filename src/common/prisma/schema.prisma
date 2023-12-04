@@ -53,6 +53,7 @@ model Group {
   updatedBy   String?       @db.Uuid
   owner       User          @relation(fields: [createdBy], references: [id])
 
+  @@index([groupLink])
   @@map("groups")
 }
 
