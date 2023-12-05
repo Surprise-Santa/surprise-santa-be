@@ -179,4 +179,33 @@ export class EventService {
       skipDuplicates: true,
     });
   }
+
+  async pairEventParticipants(eventId: string, userId: string) {
+    const eventPair = await this.prisma.eventPairing.findUnique({
+      where: {
+        eventId_donor: {
+          eventId,
+          donor: userId,
+        },
+      },
+    });
+
+    if (eventPair) {
+      return await this.prisma.user.findFirst({
+        where: {
+          id: eventPair.beneficiary,
+        },
+      });
+    }
+
+    const eventParticipants = await this.prisma.eventParticipant.findMany({
+      where: { eventId },
+    });
+
+    const userIsEventParticipant = eventParticipants.some(
+      (participant) => participant.userId === userId,
+    );
+
+    if (!userIsEventParticipant) throw new NotAcceptableException();
+  }
 }

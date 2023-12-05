@@ -59,4 +59,12 @@ export class EventController {
   ) {
     return this.eventService.addEventParticipants(id, dto);
   }
+
+  @Post('/:eventId/get-match')
+  async getMatch(
+    @Param('eventId', ParseUUIDPipe) id: string,
+    @GetRequestUser() user: User,
+  ) {
+    return this.eventService.pairEventParticipants(id, user.id);
+  }
 }

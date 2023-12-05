@@ -119,5 +119,7 @@ model EventPairing {
   updatedBy   String?  @db.VarChar
   event       Event?   @relation(fields: [eventId], references: [id])
 
+  @@unique([eventId, beneficiary])
+  @@unique([eventId, donor])
   @@map("event_pairings")
 }
