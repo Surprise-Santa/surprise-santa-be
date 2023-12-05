@@ -20,7 +20,7 @@ import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
 @ApiTags(ApiTag.EVENT)
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@Controller('event')
+@Controller('events')
 export class EventController {
   constructor(private eventService: EventService) {}
 

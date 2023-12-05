@@ -24,7 +24,7 @@ import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
 @ApiTags(ApiTag.GROUP)
-@Controller('group')
+@Controller('groups')
 export class GroupController {
   constructor(
     private groupService: GroupService,

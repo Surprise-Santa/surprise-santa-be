@@ -10,7 +10,7 @@ export enum Gender {
 }
 
 export enum ApiTag {
-  GROUP = 'Group',
-  EVENT = 'Event',
+  GROUP = 'Groups',
+  EVENT = 'Events',
   SETTING = 'Settings',
 }
