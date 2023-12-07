@@ -37,6 +37,14 @@ export class EventController {
     return this.eventService.getEvent(id, user);
   }
 
+  @Get('/:eventId/get-match')
+  async getMatch(
+    @Param('eventId', ParseUUIDPipe) id: string,
+    @GetRequestUser() user: User,
+  ) {
+    return this.eventService.getEventPairing(id, user.id);
+  }
+
   @Post('/create')
   async createEvent(@Body() dto: CreateEventDto, @GetRequestUser() user: User) {
     return this.eventService.createEvent(dto, user);
@@ -61,7 +69,7 @@ export class EventController {
   }
 
   @Post('/:eventId/get-match')
-  async getMatch(
+  async createEventPairing(
     @Param('eventId', ParseUUIDPipe) id: string,
     @GetRequestUser() user: User,
   ) {

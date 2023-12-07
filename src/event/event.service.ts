@@ -180,6 +180,17 @@ export class EventService {
     });
   }
 
+  async getEventPairing(eventId: string, userId: string) {
+    return await this.prisma.eventPairing.findUnique({
+      where: {
+        eventId_donor: {
+          eventId,
+          donor: userId,
+        },
+      },
+    });
+  }
+
   async pairEventParticipants(eventId: string, userId: string) {
     const eventPair = await this.prisma.eventPairing.findUnique({
       where: {
