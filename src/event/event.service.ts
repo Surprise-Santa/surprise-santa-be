@@ -180,34 +180,40 @@ export class EventService {
     });
   }
 
-  async getEventPairing(eventId: string, userId: string) {
-    return await this.prisma.eventPairing.findUnique({
+  async getEventPairing(
+    eventId: string,
+    userId: string,
+    prisma?: PrismaClient,
+  ) {
+    const prismaClient = prisma ?? this.prisma;
+    const currentTime = moment.utc().toDate();
+
+    const event = await prismaClient.event.findFirst({
       where: {
-        eventId_donor: {
-          eventId,
-          donor: userId,
+        startDate: { lte: currentTime },
+        id: eventId,
+      },
+      include: {
+        pairs: {
+          where: {
+            eventId,
+            donorId: userId,
+          },
+          include: {
+            donor: true,
+            beneficiary: true,
+          },
         },
       },
     });
+
+    return event?.pairs[0] ?? null;
   }
 
   async pairEventParticipants(eventId: string, userId: string) {
-    const eventPair = await this.prisma.eventPairing.findUnique({
-      where: {
-        eventId_donor: {
-          eventId,
-          donor: userId,
-        },
-      },
-    });
+    const eventPair = await this.getEventPairing(eventId, userId);
 
-    if (eventPair) {
-      return await this.prisma.user.findFirst({
-        where: {
-          id: eventPair.beneficiary,
-        },
-      });
-    }
+    if (eventPair) return eventPair;
 
     const eventParticipants = await this.prisma.eventParticipant.findMany({
       where: { eventId },

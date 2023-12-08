@@ -17,22 +17,24 @@ enum Gender {
 }
 
 model User {
-  id            String        @id @default(uuid()) @db.Uuid
-  firstName     String        @db.VarChar
-  middleName    String?       @db.VarChar
-  lastName      String        @db.VarChar
-  email         String        @unique @db.VarChar
+  id            String         @id @default(uuid()) @db.Uuid
+  firstName     String         @db.VarChar
+  middleName    String?        @db.VarChar
+  lastName      String         @db.VarChar
+  email         String         @unique @db.VarChar
   phone         String?
   password      String
   gender        Gender
-  profileImgUrl String?       @db.VarChar
-  status        Boolean       @default(true)
-  createdAt     DateTime      @default(now()) @db.Timestamptz(6)
-  createdBy     String?       @db.VarChar
-  updatedAt     DateTime      @updatedAt() @db.Timestamptz(6)
-  updatedBy     String?       @db.VarChar
+  profileImgUrl String?        @db.VarChar
+  status        Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  createdBy     String?        @db.VarChar
+  updatedAt     DateTime       @updatedAt() @db.Timestamptz(6)
+  updatedBy     String?        @db.VarChar
   groups        GroupMember[]
   ownGroups     Group[]
+  donor         EventPairing[] @relation(name: "eventDonor")
+  beneficiary   EventPairing[] @relation(name: "eventBeneficiary")
 
   @@map("users")
 }
@@ -108,18 +110,20 @@ model EventParticipant {
 }
 
 model EventPairing {
-  id          String   @id @default(uuid()) @db.Uuid
-  beneficiary String   @db.Uuid
-  donor       String   @db.Uuid
-  eventId     String?  @db.Uuid
-  status      Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  createdBy   String?  @db.VarChar
-  updatedAt   DateTime @updatedAt() @db.Timestamptz(6)
-  updatedBy   String?  @db.VarChar
-  event       Event?   @relation(fields: [eventId], references: [id])
+  id            String   @id @default(uuid()) @db.Uuid
+  beneficiaryId String   @db.Uuid
+  donorId       String   @db.Uuid
+  eventId       String?  @db.Uuid
+  status        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  createdBy     String?  @db.VarChar
+  updatedAt     DateTime @updatedAt() @db.Timestamptz(6)
+  updatedBy     String?  @db.VarChar
+  event         Event?   @relation(fields: [eventId], references: [id])
+  donor         User     @relation(name: "eventDonor", fields: [donorId], references: [id])
+  beneficiary   User     @relation(name: "eventBeneficiary", fields: [beneficiaryId], references: [id])
 
-  @@unique([eventId, beneficiary])
-  @@unique([eventId, donor])
+  @@unique([eventId, beneficiaryId])
+  @@unique([eventId, donorId])
   @@map("event_pairings")
 }
