@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotAcceptableException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   EventPairing,
@@ -212,6 +213,11 @@ export class EventService {
         },
       },
     });
+
+    if (!event)
+      throw new NotFoundException(
+        'The event has either been removed or has not yet started. Please contact your administrator.',
+      );
 
     return event?.pairs[0]
       ? AppUtilities.removeSensitiveData(event.pairs[0], 'password', true)
