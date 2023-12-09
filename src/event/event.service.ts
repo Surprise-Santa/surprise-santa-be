@@ -213,7 +213,9 @@ export class EventService {
       },
     });
 
-    return event?.pairs[0] ?? null;
+    return event?.pairs[0]
+      ? AppUtilities.removeSensitiveData(event.pairs[0], 'password', true)
+      : null;
   }
 
   async pairEventParticipants(eventId: string, userId: string) {
@@ -267,7 +269,7 @@ export class EventService {
         throw error;
       }
     }
-    return match;
+    return AppUtilities.removeSensitiveData(match, 'password', true);
   }
 
   private async getEventBeneficiary(

@@ -135,4 +135,22 @@ export class AppUtilities {
 
     return errorData;
   };
+
+  public static removeSensitiveData(
+    data: any,
+    deleteKeys: any,
+    remove?: boolean,
+  ) {
+    if (typeof data != 'object') return; // if data not object
+    if (!data) return; // null object
+
+    for (const key in data) {
+      if (deleteKeys.includes(key)) {
+        remove ? delete data[key] : (data[key] = '******************');
+      } else {
+        AppUtilities.removeSensitiveData(data[key], deleteKeys, remove); // recursive to check inner object
+      }
+    }
+    return data;
+  }
 }
