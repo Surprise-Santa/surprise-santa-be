@@ -3,8 +3,15 @@ import {
   ForbiddenException,
   Injectable,
   NotAcceptableException,
+  NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient, User } from '@prisma/client';
+import {
+  EventPairing,
+  EventParticipant,
+  Prisma,
+  PrismaClient,
+  User,
+} from '@prisma/client';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AppUtilities } from '@@/common/utilities';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
@@ -178,5 +185,108 @@ export class EventService {
       })),
       skipDuplicates: true,
     });
+  }
+
+  async getEventPairing(
+    eventId: string,
+    userId: string,
+    prisma?: PrismaClient,
+  ) {
+    const prismaClient = prisma ?? this.prisma;
+    const currentTime = moment.utc().toDate();
+
+    const event = await prismaClient.event.findFirst({
+      where: {
+        startDate: { lte: currentTime },
+        id: eventId,
+      },
+      include: {
+        pairs: {
+          where: {
+            eventId,
+            donorId: userId,
+          },
+          include: {
+            donor: true,
+            beneficiary: true,
+          },
+        },
+      },
+    });
+
+    if (!event)
+      throw new NotFoundException(
+        'The event has either been removed or has not yet started. Please contact your administrator.',
+      );
+
+    return event?.pairs[0]
+      ? AppUtilities.removeSensitiveData(event.pairs[0], 'password', true)
+      : null;
+  }
+
+  async pairEventParticipants(eventId: string, userId: string) {
+    const eventPair = await this.getEventPairing(eventId, userId);
+
+    if (eventPair) return eventPair;
+
+    const eventParticipants = await this.prisma.eventParticipant.findMany({
+      where: { eventId },
+    });
+
+    const eventParticipant = eventParticipants.find(
+      (participant) => participant.userId === userId,
+    );
+
+    if (!eventParticipant) throw new NotAcceptableException();
+
+    const MAX_RETRIES = eventParticipants.length;
+    let retries = 0;
+    let match: EventPairing;
+    while (retries < MAX_RETRIES) {
+      try {
+        match = await this.prisma.$transaction(
+          async (prisma: PrismaClient) => {
+            const match = this.getEventBeneficiary(
+              eventParticipant,
+              eventParticipants,
+            );
+
+            return await prisma.eventPairing.create({
+              data: {
+                beneficiaryId: match.userId,
+                donorId: userId,
+                eventId,
+              },
+              include: {
+                donor: true,
+                beneficiary: true,
+              },
+            });
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+        );
+        break;
+      } catch (error) {
+        if (error.code === 'P2034') {
+          retries++;
+          continue;
+        }
+        throw error;
+      }
+    }
+    return AppUtilities.removeSensitiveData(match, 'password', true);
+  }
+
+  private getEventBeneficiary(
+    { userId }: EventParticipant,
+    eventParticipants: EventParticipant[],
+  ): EventParticipant {
+    let beneficiary: EventParticipant;
+    do {
+      beneficiary =
+        eventParticipants[Math.floor(Math.random() * eventParticipants.length)];
+    } while (beneficiary.userId === userId);
+
+    return beneficiary;
   }
 }

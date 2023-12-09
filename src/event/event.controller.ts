@@ -20,7 +20,7 @@ import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
 @ApiTags(ApiTag.EVENT)
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@Controller('event')
+@Controller('events')
 export class EventController {
   constructor(private eventService: EventService) {}
 
@@ -35,6 +35,14 @@ export class EventController {
     @GetRequestUser() user: User,
   ) {
     return this.eventService.getEvent(id, user);
+  }
+
+  @Get('/:eventId/get-match')
+  async getMatch(
+    @Param('eventId', ParseUUIDPipe) id: string,
+    @GetRequestUser() user: User,
+  ) {
+    return this.eventService.getEventPairing(id, user.id);
   }
 
   @Post('/create')
@@ -58,5 +66,13 @@ export class EventController {
     @Body() dto: AddEventParticipantsDto,
   ) {
     return this.eventService.addEventParticipants(id, dto);
+  }
+
+  @Post('/:eventId/get-match')
+  async createEventPairing(
+    @Param('eventId', ParseUUIDPipe) id: string,
+    @GetRequestUser() user: User,
+  ) {
+    return this.eventService.pairEventParticipants(id, user.id);
   }
 }
