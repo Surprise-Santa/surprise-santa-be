@@ -4,7 +4,13 @@ import {
   Injectable,
   NotAcceptableException,
 } from '@nestjs/common';
-import { PrismaClient, User } from '@prisma/client';
+import {
+  EventPairing,
+  EventParticipant,
+  Prisma,
+  PrismaClient,
+  User,
+} from '@prisma/client';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AppUtilities } from '@@/common/utilities';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
@@ -219,10 +225,66 @@ export class EventService {
       where: { eventId },
     });
 
-    const userIsEventParticipant = eventParticipants.some(
+    const eventParticipant = eventParticipants.find(
       (participant) => participant.userId === userId,
     );
 
-    if (!userIsEventParticipant) throw new NotAcceptableException();
+    if (!eventParticipant) throw new NotAcceptableException();
+
+    const MAX_RETRIES = eventParticipants.length;
+    let retries = 0;
+    let match: EventPairing;
+    while (retries < MAX_RETRIES) {
+      try {
+        match = await this.prisma.$transaction(
+          async (prisma: PrismaClient) => {
+            const match = await this.getEventBeneficiary(
+              eventParticipant,
+              eventParticipants,
+              prisma,
+            );
+
+            return await prisma.eventPairing.create({
+              data: {
+                beneficiaryId: match.id,
+                donorId: userId,
+                eventId,
+              },
+              include: {
+                donor: true,
+                beneficiary: true,
+              },
+            });
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+        );
+        break;
+      } catch (error) {
+        if (error.code === 'P2034') {
+          retries++;
+          continue;
+        }
+        throw error;
+      }
+    }
+    return match;
+  }
+
+  private async getEventBeneficiary(
+    { userId }: EventParticipant,
+    eventParticipants: EventParticipant[],
+    prisma?: PrismaClient,
+  ): Promise<User> {
+    const prismaClient = prisma ?? this.prisma;
+
+    let beneficiary: EventParticipant;
+    do {
+      beneficiary =
+        eventParticipants[Math.floor(Math.random() * eventParticipants.length)];
+    } while (beneficiary.userId === userId);
+
+    return await prismaClient.user.findFirst({
+      where: { id: beneficiary.userId },
+    });
   }
 }
