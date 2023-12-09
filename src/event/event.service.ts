@@ -246,15 +246,14 @@ export class EventService {
       try {
         match = await this.prisma.$transaction(
           async (prisma: PrismaClient) => {
-            const match = await this.getEventBeneficiary(
+            const match = this.getEventBeneficiary(
               eventParticipant,
               eventParticipants,
-              prisma,
             );
 
             return await prisma.eventPairing.create({
               data: {
-                beneficiaryId: match.id,
+                beneficiaryId: match.userId,
                 donorId: userId,
                 eventId,
               },
@@ -278,21 +277,16 @@ export class EventService {
     return AppUtilities.removeSensitiveData(match, 'password', true);
   }
 
-  private async getEventBeneficiary(
+  private getEventBeneficiary(
     { userId }: EventParticipant,
     eventParticipants: EventParticipant[],
-    prisma?: PrismaClient,
-  ): Promise<User> {
-    const prismaClient = prisma ?? this.prisma;
-
+  ): EventParticipant {
     let beneficiary: EventParticipant;
     do {
       beneficiary =
         eventParticipants[Math.floor(Math.random() * eventParticipants.length)];
     } while (beneficiary.userId === userId);
 
-    return await prismaClient.user.findFirst({
-      where: { id: beneficiary.userId },
-    });
+    return beneficiary;
   }
 }
