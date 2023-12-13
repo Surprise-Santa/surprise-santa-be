@@ -41,17 +41,7 @@ export class GroupService {
       },
     });
 
-    const result = groups.map(({ group }) => {
-      const transformedMembers = group.members.map(({ user, ...member }) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...userWithoutPassword } = user;
-        return { ...member, user: userWithoutPassword };
-      });
-
-      return { ...group, members: transformedMembers };
-    });
-
-    return result;
+    return AppUtilities.removeSensitiveData(groups, 'password', true);
   }
 
   async getGroupById(id: string, user: User) {
@@ -74,13 +64,7 @@ export class GroupService {
 
     if (!group) throw new NotFoundException('Group not found');
 
-    const groupMembers = group.members.map(({ user, ...member }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = user;
-      return { ...member, user: userWithoutPassword };
-    });
-
-    return { ...group, members: groupMembers };
+    return AppUtilities.removeSensitiveData(group, 'password', true);
   }
 
   async getMyCreatedGroups(user: User) {
@@ -95,20 +79,7 @@ export class GroupService {
       },
     });
 
-    const result = groups.map(({ members, ...groupData }) => {
-      const transformedMembers = members.map(({ user, ...member }) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...userWithoutPassword } = user;
-        return { ...member, user: userWithoutPassword };
-      });
-
-      return {
-        ...groupData,
-        members: transformedMembers,
-      };
-    });
-
-    return result;
+    return AppUtilities.removeSensitiveData(groups, 'password', true);
   }
 
   async createGroup(
@@ -149,10 +120,17 @@ export class GroupService {
             owner: { connect: { id: user.id } },
             members: { create: { user: { connect: { id: user.id } } } },
           },
-          include: { members: true, events: true },
+          include: {
+            members: {
+              include: {
+                user: true,
+              },
+            },
+            events: true,
+          },
         });
 
-        return group;
+        return AppUtilities.removeSensitiveData(group, 'password', true);
       });
     } catch (error) {
       console.log(error);
@@ -175,13 +153,25 @@ export class GroupService {
     if (existingMember)
       throw new BadRequestException('You are already a member of this group');
 
-    return await this.prisma.groupMember.create({
+    const result = await this.prisma.groupMember.create({
       data: {
         userId: user.id,
         groupId: group.id,
       },
-      include: { group: { include: { members: true } } },
+      include: {
+        group: {
+          include: {
+            members: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
     });
+
+    return AppUtilities.removeSensitiveData(result, 'password', true);
   }
 
   async sendGroupInvite(

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { PrismaService } from 'src/common/database/prisma/prisma.service';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AppUtilities } from '../../common/utilities';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -32,7 +33,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
-    delete user.password;
-    return user;
+    return AppUtilities.removeSensitiveData(user, 'password', true);
   }
 }

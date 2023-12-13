@@ -41,14 +41,12 @@ export class AuthService {
         },
       });
 
-      delete user.password;
-
       await this.messagingQueue.queueWelcomeEmail({
         email,
         firstName,
       });
 
-      return user;
+      return AppUtilities.removeSensitiveData(user, 'password', true);
     } catch (err) {
       if (err.code === 'P2002') {
         throw new ForbiddenException('Email address already exists');
@@ -72,11 +70,9 @@ export class AuthService {
 
     const token = await this.signToken(user.id, user.email);
 
-    delete user.password;
-
     return {
       token,
-      user,
+      user: AppUtilities.removeSensitiveData(user, 'password', true),
     };
   }
 
@@ -137,7 +133,7 @@ export class AuthService {
       where: { email: req.user.email },
     });
 
-    return existingUser;
+    return AppUtilities.removeSensitiveData(existingUser, 'password', true);
   }
 
   async clientSocialRegister({ accessToken, ...dto }: ClientGoogleRegisterDto) {
@@ -174,8 +170,10 @@ export class AuthService {
       );
 
     const token = await this.signToken(existingUser.id, googleUser.email);
-    delete existingUser.password;
 
-    return { token, user: existingUser };
+    return {
+      token,
+      user: AppUtilities.removeSensitiveData(existingUser, 'password', true),
+    };
   }
 }
