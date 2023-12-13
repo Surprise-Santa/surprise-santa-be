@@ -14,7 +14,7 @@
       font-family: 'Open Sans', sans-serif; font-size: 16px; background: #eee;
       line-height: 1.5; display: block; padding: 20px } h1,h2,h3,h4 {
       font-family: 'Proza Libre', sans-serif; color: #5D9C59 } h1 {font-size:
-      48px; font-weight: 700;} a { color: #5D9C59} button { background-color:
+      48px; font-weight: 700;} .text {color: #000} a { color: #5D9C59} button { background-color:
       #DF2E38, color: #fff; border-radius: 4px} h2 {font-size: 36px;
       font-weight: 500;} .site-title { display: block; font-weight: 900;
       font-size: 30px; margin: 20px 0; } .container { position: relative;
@@ -33,7 +33,7 @@
         {{firstName}}</h2>
       <section>
         <h3 style='margin-bottom: 20px; line-height: 1'>Hello 👋🏽</h3>
-        <p>This is an invite link from
+        <p class="text">This is an invite link from
           {{firstName}}
           to join
           {{groupName}}
@@ -43,12 +43,12 @@
         ><a href={{groupLink}} style='text-decoration: none; color: white'>Join
             group</a></button>
 
-        <p>You can copy the link also:
+        <p class="text">You can copy the link also:
           {{groupLink}}</p>
       </section>
       <section style='margin-top: 40px'>
-        <p>Cheers,</p>
-        <p>Claus from
+        <p class="text">Cheers,</p>
+        <p class="text">Claus from
           <span
             style='color: #DF2E38; font-weight: 700'
           >SecretSanta!!!</span></p>
