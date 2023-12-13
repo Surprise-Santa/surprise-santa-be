@@ -246,7 +246,7 @@ export class EventService {
       try {
         match = await this.prisma.$transaction(
           async (prisma: PrismaClient) => {
-            const match = this.getEventBeneficiary(
+            const match = this.createEventBeneficiary(
               eventParticipant,
               eventParticipants,
             );
@@ -277,7 +277,7 @@ export class EventService {
     return AppUtilities.removeSensitiveData(match, 'password', true);
   }
 
-  private getEventBeneficiary(
+  private createEventBeneficiary(
     { userId }: EventParticipant,
     eventParticipants: EventParticipant[],
   ): EventParticipant {
