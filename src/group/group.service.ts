@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -14,10 +13,12 @@ import { AppUtilities } from '../common/utilities';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 import { MessagingQueueProducer } from '../common/messaging/queue/producer';
 import { isUUID } from 'class-validator';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GroupService {
   constructor(
+    private config: ConfigService,
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
     private messagingQueue: MessagingQueueProducer,
@@ -27,6 +28,7 @@ export class GroupService {
     const groups = await this.prisma.groupMember.findMany({
       where: {
         userId: user.id,
+        group: { createdBy: { not: user.id } },
       },
       select: {
         group: {
@@ -45,26 +47,20 @@ export class GroupService {
   }
 
   async getGroupById(id: string, user: User) {
-    const groupMember = await this.prisma.groupMember.findFirst({
-      where: { userId: user.id, groupId: id },
-    });
-
-    if (!groupMember) throw new ForbiddenException('Cannot view group');
-
-    const group = await this.prisma.group.findFirst({
-      where: { id },
-      include: {
-        members: {
-          select: {
-            user: true,
-          },
-        },
-      },
+    const group = await this.prisma.group.findUnique({
+      where: { id, members: { some: { userId: user.id } } },
     });
 
     if (!group) throw new NotFoundException('Group not found');
 
-    return AppUtilities.removeSensitiveData(group, 'password', true);
+    const members = await this.prisma.groupMember.findMany({
+      where: { groupId: id },
+      include: { user: true },
+    });
+
+    if (!members) throw new NotFoundException('Cannot find group members');
+
+    return AppUtilities.removeSensitiveData(members, 'password', true);
   }
 
   async getMyCreatedGroups(user: User) {
@@ -118,7 +114,14 @@ export class GroupService {
             groupLink,
             logoUrl: logosUrl,
             owner: { connect: { id: user.id } },
-            members: { create: { user: { connect: { id: user.id } } } },
+            members: {
+              create: {
+                user: {
+                  connect: { id: user.id },
+                },
+                isAdmin: true,
+              },
+            },
           },
           include: {
             members: {
@@ -201,12 +204,16 @@ export class GroupService {
       group.members.some(({ user }) => user.email !== email),
     );
 
+    const baseUrl = this.config.get('app.baseUrl');
+
+    const link = `${baseUrl}/?group=${group.groupLink}`;
+
     const emailsToInvitePromises = emailsToInvite.map((email) =>
       this.messagingQueue.queueGroupInviteEmail({
         email,
         firstName: user.firstName,
         groupName: group.name,
-        groupLink: group.groupLink,
+        groupLink: link,
       }),
     );
     await Promise.all(emailsToInvitePromises);
