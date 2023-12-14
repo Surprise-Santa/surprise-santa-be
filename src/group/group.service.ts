@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -55,26 +54,20 @@ export class GroupService {
   }
 
   async getGroupById(id: string, user: User) {
-    const groupMember = await this.prisma.groupMember.findFirst({
-      where: { userId: user.id, groupId: id },
-    });
-
-    if (!groupMember) throw new ForbiddenException('Cannot view group');
-
-    const group = await this.prisma.group.findFirst({
-      where: { id },
-      include: {
-        members: {
-          select: {
-            user: true,
-          },
-        },
-      },
+    const group = await this.prisma.group.findUnique({
+      where: { id, members: { some: { userId: user.id } } },
     });
 
     if (!group) throw new NotFoundException('Group not found');
 
-    const groupMembers = group.members.map(({ user, ...member }) => {
+    const members = await this.prisma.groupMember.findMany({
+      where: { groupId: id },
+      include: { user: true },
+    });
+
+    if (!members) throw new NotFoundException('Cannot find group members');
+
+    const groupMembers = members.map(({ user, ...member }) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...userWithoutPassword } = user;
       return { ...member, user: userWithoutPassword };
@@ -147,7 +140,14 @@ export class GroupService {
             groupLink,
             logoUrl: logosUrl,
             owner: { connect: { id: user.id } },
-            members: { create: { user: { connect: { id: user.id } } } },
+            members: {
+              create: {
+                user: {
+                  connect: { id: user.id },
+                },
+                isAdmin: true,
+              },
+            },
           },
           include: { members: true, events: true },
         });

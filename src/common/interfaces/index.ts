@@ -13,4 +13,5 @@ export enum ApiTag {
   GROUP = 'Groups',
   EVENT = 'Events',
   SETTING = 'Settings',
+  MEMBER = 'Group Members',
 }

@@ -63,6 +63,7 @@ model GroupMember {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
   groupId   String   @db.Uuid
+  isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   createdBy String?  @db.Uuid
   updatedAt DateTime @updatedAt() @db.Timestamptz(6)
