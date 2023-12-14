@@ -26,6 +26,7 @@ export class GroupService {
     const groups = await this.prisma.groupMember.findMany({
       where: {
         userId: user.id,
+        group: { createdBy: { not: user.id } },
       },
       select: {
         group: {
