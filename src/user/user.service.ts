@@ -1,6 +1,7 @@
 import { PrismaService } from '@@/common/database/prisma/prisma.service';
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { AppUtilities } from '../common/utilities';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,6 @@ export class UserService {
 
     if (!foundUser) throw new NotAcceptableException('User not found');
 
-    delete foundUser.password;
-    return foundUser;
+    return AppUtilities.removeSensitiveData(foundUser, 'password', true);
   }
 }
