@@ -68,13 +68,7 @@ export class GroupService {
 
     if (!members) throw new NotFoundException('Cannot find group members');
 
-    const groupMembers = members.map(({ user, ...member }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = user;
-      return { ...member, user: userWithoutPassword };
-    });
-
-    return { ...group, members: groupMembers };
+    return AppUtilities.removeSensitiveData(members, 'password', true);
   }
 
   async getMyCreatedGroups(user: User) {
