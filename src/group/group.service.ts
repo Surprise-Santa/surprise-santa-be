@@ -13,10 +13,12 @@ import { AppUtilities } from '../common/utilities';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 import { MessagingQueueProducer } from '../common/messaging/queue/producer';
 import { isUUID } from 'class-validator';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GroupService {
   constructor(
+    private config: ConfigService,
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
     private messagingQueue: MessagingQueueProducer,
@@ -202,12 +204,16 @@ export class GroupService {
       group.members.some(({ user }) => user.email !== email),
     );
 
+    const baseUrl = this.config.get('app.baseUrl');
+
+    const link = `${baseUrl}/?group=${group.groupLink}`;
+
     const emailsToInvitePromises = emailsToInvite.map((email) =>
       this.messagingQueue.queueGroupInviteEmail({
         email,
         firstName: user.firstName,
         groupName: group.name,
-        groupLink: group.groupLink,
+        groupLink: link,
       }),
     );
     await Promise.all(emailsToInvitePromises);
