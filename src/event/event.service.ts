@@ -26,7 +26,7 @@ export class EventService {
     const events = await this.prisma.eventParticipant.findMany({
       where: { userId },
       select: {
-        event: true,
+        event: { include: { participants: true } },
       },
     });
 
@@ -34,7 +34,10 @@ export class EventService {
   }
 
   async getGroupEvents(groupId: string) {
-    return await this.prisma.event.findMany({ where: { groupId } });
+    return await this.prisma.event.findMany({
+      where: { groupId },
+      include: { participants: true },
+    });
   }
 
   async getEvent(eventId: string, user: User) {
@@ -51,7 +54,10 @@ export class EventService {
   }
 
   async getGroupEvent(groupId: string, eventId: string) {
-    return this.prisma.event.findFirst({ where: { groupId, id: eventId } });
+    return this.prisma.event.findFirst({
+      where: { groupId, id: eventId },
+      include: { participants: true },
+    });
   }
 
   async createEvent({ groupId, ...dto }: CreateEventDto, user: User) {
