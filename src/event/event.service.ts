@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import {
   BadRequestException,
   ForbiddenException,
@@ -30,13 +31,20 @@ export class EventService {
       },
     });
 
-    return events.map((event) => event.event);
+    return events.map((data) => {
+      const { event } = data;
+      return AppUtilities.removeSensitiveData(event, 'password', true);
+    });
   }
 
   async getGroupEvents(groupId: string) {
-    return await this.prisma.event.findMany({
+    const event = await this.prisma.event.findMany({
       where: { groupId },
       include: { participants: { include: { user: true } } },
+    });
+
+    return event.map((data) => {
+      return AppUtilities.removeSensitiveData(data, 'password', true);
     });
   }
 
@@ -50,7 +58,7 @@ export class EventService {
 
     if (!event) throw new NotAcceptableException('Invalid event!');
 
-    return event;
+    return AppUtilities.removeSensitiveData(event, 'password', true);
   }
 
   async getGroupEvent(groupId: string, eventId: string) {
