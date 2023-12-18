@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import {
   BadRequestException,
   ForbiddenException,
@@ -26,32 +27,45 @@ export class EventService {
     const events = await this.prisma.eventParticipant.findMany({
       where: { userId },
       select: {
-        event: true,
+        event: { include: { participants: { include: { user: true } } } },
       },
     });
 
-    return events.map((event) => event.event);
+    return events.map((data) => {
+      const { event } = data;
+      return AppUtilities.removeSensitiveData(event, 'password', true);
+    });
   }
 
   async getGroupEvents(groupId: string) {
-    return await this.prisma.event.findMany({ where: { groupId } });
+    const event = await this.prisma.event.findMany({
+      where: { groupId },
+      include: { participants: { include: { user: true } } },
+    });
+
+    return event.map((data) => {
+      return AppUtilities.removeSensitiveData(data, 'password', true);
+    });
   }
 
   async getEvent(eventId: string, user: User) {
     const event = await this.prisma.eventParticipant.findFirst({
       where: { eventId, userId: user.id },
       select: {
-        event: { include: { participants: true } },
+        event: { include: { participants: { include: { user: true } } } },
       },
     });
 
     if (!event) throw new NotAcceptableException('Invalid event!');
 
-    return event;
+    return AppUtilities.removeSensitiveData(event, 'password', true);
   }
 
   async getGroupEvent(groupId: string, eventId: string) {
-    return this.prisma.event.findFirst({ where: { groupId, id: eventId } });
+    return this.prisma.event.findFirst({
+      where: { groupId, id: eventId },
+      include: { participants: true },
+    });
   }
 
   async createEvent({ groupId, ...dto }: CreateEventDto, user: User) {
