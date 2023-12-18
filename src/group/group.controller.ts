@@ -51,6 +51,11 @@ export class GroupController {
     return await this.groupService.getGroupMembers(id);
   }
 
+  @Get('/:id/details')
+  async getGroupDetails(@Param('groupCode') groupCode: string) {
+    return await this.groupService.getGroupDetails(groupCode);
+  }
+
   @Get('/:id')
   async getGroupById(
     @Param('id', ParseUUIDPipe) id: string,

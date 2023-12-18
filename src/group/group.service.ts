@@ -97,6 +97,17 @@ export class GroupService {
     });
   }
 
+  async getGroupDetails(groupCode: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { groupCode },
+      include: { events: true },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
+    return group;
+  }
+
   async createGroup(
     dto: CreateGroupDto,
     logo: Express.Multer.File,
