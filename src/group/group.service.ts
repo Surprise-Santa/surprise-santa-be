@@ -86,23 +86,11 @@ export class GroupService {
             user: true,
           },
         },
+        owner: true,
       },
     });
 
-    const result = groups.map(({ members, ...groupData }) => {
-      const transformedMembers = members.map(({ user, ...member }) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...userWithoutPassword } = user;
-        return { ...member, user: userWithoutPassword };
-      });
-
-      return {
-        ...groupData,
-        members: transformedMembers,
-      };
-    });
-
-    return result;
+    return AppUtilities.removeSensitiveData(groups, 'password', true);
   }
 
   async createGroup(
