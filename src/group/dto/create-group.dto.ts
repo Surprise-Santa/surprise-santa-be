@@ -11,7 +11,7 @@ export class CreateGroupDto {
   description?: string;
 
   @ApiHideProperty()
-  groupLink: string;
+  groupCode: string;
 
   @ApiProperty({ type: 'string', format: 'binary' })
   @IsOptional()

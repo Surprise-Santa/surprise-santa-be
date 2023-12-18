@@ -19,5 +19,5 @@ export interface IWelcomeEmail extends ISendEmail {}
 
 export interface IGroupInviteEmail extends ISendEmail {
   groupName: string;
-  groupLink: string;
+  groupCode: string;
 }

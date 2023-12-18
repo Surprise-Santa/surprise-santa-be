@@ -95,13 +95,13 @@ export class GroupService {
 
     if (!foundUser) throw new NotFoundException('User not found');
 
-    let groupLink = AppUtilities.generateShortCode(6);
+    let groupCode = AppUtilities.generateShortCode(6);
     const existingLink = await this.prisma.group.findUnique({
-      where: { groupLink },
+      where: { groupCode },
     });
 
     while (existingLink) {
-      groupLink = AppUtilities.generateShortCode(6);
+      groupCode = AppUtilities.generateShortCode(6);
     }
 
     try {
@@ -117,7 +117,7 @@ export class GroupService {
         const group = await this.prisma.group.create({
           data: {
             ...dto,
-            groupLink,
+            groupCode,
             logoUrl: logosUrl,
             owner: { connect: { id: user.id } },
             members: {
@@ -150,7 +150,7 @@ export class GroupService {
   async joinGroup(id: string, user: User) {
     const findUniqueGroupDto: Prisma.GroupFindUniqueArgs = isUUID(id)
       ? { where: { id } }
-      : { where: { groupLink: id } };
+      : { where: { groupCode: id } };
     const group = await this.prisma.group.findUnique(findUniqueGroupDto);
 
     if (!group) throw new NotFoundException('Group not found');
@@ -199,7 +199,7 @@ export class GroupService {
       where: { id },
       select: {
         name: true,
-        groupLink: true,
+        groupCode: true,
         members: { select: { user: { select: { email: true } } } },
       },
     });
@@ -212,14 +212,14 @@ export class GroupService {
 
     const baseUrl = this.config.get('app.baseUrl');
 
-    const link = `${baseUrl}/?group=${group.groupLink}`;
+    const link = `${baseUrl}/?group=${group.groupCode}`;
 
     const emailsToInvitePromises = emailsToInvite.map((email) =>
       this.messagingQueue.queueGroupInviteEmail({
         email,
         firstName: user.firstName,
         groupName: group.name,
-        groupLink: link,
+        groupCode: link,
       }),
     );
     await Promise.all(emailsToInvitePromises);

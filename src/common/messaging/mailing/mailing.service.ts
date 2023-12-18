@@ -42,13 +42,13 @@ export class MailingService {
     template = Template.sendGroupEmailInvite,
     firstName,
     groupName,
-    groupLink,
+    groupCode,
   }: IGroupInviteEmail) {
     await this.mailerService.sendMail({
       to: email,
       subject,
       template,
-      context: { email, firstName, groupName, groupLink },
+      context: { email, firstName, groupName, groupCode },
     });
   }
 
