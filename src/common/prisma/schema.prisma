@@ -46,7 +46,7 @@ model Group {
   description String?       @db.VarChar
   isPublic    Boolean       @default(false) @db.Boolean
   logoUrl     String?       @db.VarChar
-  groupLink   String?       @unique @db.VarChar
+  groupCode   String?       @unique @db.VarChar
   members     GroupMember[]
   events      Event[]
   status      Boolean       @default(true)
@@ -56,7 +56,7 @@ model Group {
   updatedBy   String?       @db.Uuid
   owner       User          @relation(fields: [createdBy], references: [id])
 
-  @@index([groupLink])
+  @@index([groupCode])
   @@map("groups")
 }
 
