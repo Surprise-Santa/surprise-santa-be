@@ -84,6 +84,19 @@ export class GroupService {
     return AppUtilities.removeSensitiveData(groups, 'password', true);
   }
 
+  async getGroupMembers(groupId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
+    return await this.prisma.groupMember.findMany({
+      where: { groupId },
+      include: { group: true },
+    });
+  }
+
   async createGroup(
     dto: CreateGroupDto,
     logo: Express.Multer.File,
