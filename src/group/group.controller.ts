@@ -23,6 +23,7 @@ import { EventService } from '@@/event/event.service';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 import { PaginationSearchOptionsDto } from '../common/database/pagination-search-options.dto';
 import { FilterGroupDto } from './dto/filter-group.dto';
+import { FilterEventsDto } from '../event/dto/filter-event.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -52,7 +53,7 @@ export class GroupController {
 
   @Get('/:id/events')
   async getGroupEvents(
-    @Query() dto: PaginationSearchOptionsDto,
+    @Query() dto: FilterEventsDto,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.eventService.getGroupEvents(dto, id);

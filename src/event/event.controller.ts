@@ -17,6 +17,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
 import { ApiTag } from '@@/common/interfaces';
 import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
+import { FilterEventsDto } from './dto/filter-event.dto';
 import { PaginationSearchOptionsDto } from '../common/database/pagination-search-options.dto';
 
 @ApiTags(ApiTag.EVENT)
@@ -28,7 +29,7 @@ export class EventController {
 
   @Get()
   async getAllEvents(
-    @Query() dto: PaginationSearchOptionsDto,
+    @Query() dto: FilterEventsDto,
     @GetRequestUser() user: User,
   ) {
     return this.eventService.getEvents(dto, user.id);
@@ -36,10 +37,11 @@ export class EventController {
 
   @Get('/:id')
   async getEvent(
+    @Query() dto: PaginationSearchOptionsDto,
     @Param('id', ParseUUIDPipe) id: string,
     @GetRequestUser() user: User,
   ) {
-    return this.eventService.getEvent(id, user);
+    return this.eventService.getEvent(id, dto, user);
   }
 
   @Get('/:eventId/get-match')

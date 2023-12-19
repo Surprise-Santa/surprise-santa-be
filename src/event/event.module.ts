@@ -6,6 +6,6 @@ import { EventParticipantService } from './participants/event-participant.servic
 @Module({
   controllers: [EventController],
   providers: [EventService, EventParticipantService],
-  exports: [EventService],
+  exports: [EventService, EventParticipantService],
 })
 export class EventModule {}
