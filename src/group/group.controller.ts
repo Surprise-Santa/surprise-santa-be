@@ -21,8 +21,6 @@ import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
 import { EventService } from '@@/event/event.service';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 
-@ApiBearerAuth()
-@UseGuards(JwtGuard)
 @ApiTags(ApiTag.GROUP)
 @Controller('groups')
 export class GroupController {
@@ -31,21 +29,29 @@ export class GroupController {
     private eventService: EventService,
   ) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get('/my-groups')
   async getMyGroups(@GetRequestUser() user: User) {
     return await this.groupService.getMyGroups(user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get('/own-groups')
   async getMyCreatedGroups(@GetRequestUser() user: User) {
     return await this.groupService.getMyCreatedGroups(user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get('/:id/events')
   async getGroupEvents(@Param('id', ParseUUIDPipe) id: string) {
     return this.eventService.getGroupEvents(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get('/:id/members')
   async getGroupMembers(@Param('id', ParseUUIDPipe) id: string) {
     return await this.groupService.getGroupMembers(id);
@@ -56,6 +62,8 @@ export class GroupController {
     return await this.groupService.getGroupDetails(groupCode);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get('/:id')
   async getGroupById(
     @Param('id', ParseUUIDPipe) id: string,
@@ -64,6 +72,8 @@ export class GroupController {
     return await this.groupService.getGroupById(id, user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get('/:id/events/:eventId')
   async getGroupEvent(
     @Param('id', ParseUUIDPipe) id: string,
@@ -72,6 +82,8 @@ export class GroupController {
     return this.eventService.getGroupEvent(id, eventId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @ApiResponseMeta({ message: 'Successfully joined the group' })
   @ApiParam({
     name: 'id',
@@ -83,6 +95,8 @@ export class GroupController {
     return this.groupService.joinGroup(id, user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @ApiConsumes('multipart/form-data')
   @Post('/create')
   @UseInterceptors(FileInterceptor('logoUrl'))
@@ -94,6 +108,8 @@ export class GroupController {
     return this.groupService.createGroup(dto, logoUrl, user);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @ApiResponseMeta({ message: 'Email invite sent successfully' })
   @Post('/:id/email-invite')
   async SendEmailInvite(

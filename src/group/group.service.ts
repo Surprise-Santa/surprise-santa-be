@@ -102,7 +102,6 @@ export class GroupService {
     const group = await this.prisma.group.findUnique({
       where: { groupCode },
       include: {
-        events: true,
         owner: { select: { firstName: true, lastName: true } },
       },
     });
