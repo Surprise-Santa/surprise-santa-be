@@ -59,7 +59,7 @@ export class GroupService extends CrudService<
       },
     };
     return this.findManyPaginate(args, dto, (data) => {
-      return AppUtilities.removeSensitiveData(data, 'password', true);
+      return AppUtilities.removeSensitiveData(data, 'password');
     });
   }
 
@@ -92,7 +92,7 @@ export class GroupService extends CrudService<
       groupMemberArgs,
       dto,
       (data) => {
-        return AppUtilities.removeSensitiveData(data, 'password', true);
+        return AppUtilities.removeSensitiveData(data, 'password');
       },
     );
 
@@ -121,7 +121,7 @@ export class GroupService extends CrudService<
       },
     };
     return this.findManyPaginate(args, dto, (data) => {
-      return AppUtilities.removeSensitiveData(data, 'password', true);
+      return AppUtilities.removeSensitiveData(data, 'password');
     });
   }
 
