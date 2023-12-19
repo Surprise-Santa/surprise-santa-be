@@ -21,6 +21,13 @@
     "paths": {
       "@@/*": ["src/*"],
       "@@cloudinary/*": ["src/cloudinary/*"],
+      "@@auth/*": ["src/auth/*"],
+      "@@common/*": ["src/common/*"],
+      "@@event/*": ["src/event/*"],
+      "@@group/*": ["src/group/*"],
+      "@@settings/*": ["src/settings/*"],
+      "@@user/*": ["src/user/*"],
+      "@@wishlist/*": ["src/wishlist/*"]
     }
   }
 }
