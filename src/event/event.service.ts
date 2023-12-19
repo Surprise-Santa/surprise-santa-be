@@ -27,7 +27,12 @@ export class EventService {
     const events = await this.prisma.eventParticipant.findMany({
       where: { userId },
       select: {
-        event: { include: { participants: { include: { user: true } } } },
+        event: {
+          include: {
+            participants: { include: { user: true } },
+            organizer: true,
+          },
+        },
       },
     });
 
@@ -35,6 +40,7 @@ export class EventService {
       const { event } = data;
       return AppUtilities.removeSensitiveData(event, 'password', true);
     });
+    return events;
   }
 
   async getGroupEvents(groupId: string) {
@@ -102,8 +108,9 @@ export class EventService {
     return await this.prisma.$transaction(async (prisma: PrismaClient) => {
       const event = await prisma.event.create({
         data: {
-          groupId,
+          group: { connect: { id: groupId } },
           eventLink,
+          organizer: { connect: { id: user.id } },
           ...dto,
         },
       });

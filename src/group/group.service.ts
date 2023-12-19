@@ -78,6 +78,7 @@ export class GroupService {
             user: true,
           },
         },
+        owner: true,
       },
     });
 

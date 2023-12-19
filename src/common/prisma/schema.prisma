@@ -36,6 +36,7 @@ model User {
   donor            EventPairing[]     @relation(name: "eventDonor")
   beneficiary      EventPairing[]     @relation(name: "eventBeneficiary")
   eventParticipant EventParticipant[]
+  events           Event[]
 
   @@map("users")
 }
@@ -89,9 +90,10 @@ model Event {
   pairs        EventPairing[]
   status       Boolean            @default(true)
   createdAt    DateTime           @default(now()) @db.Timestamptz(6)
-  createdBy    String?            @db.VarChar
+  createdBy    String             @db.Uuid
   updatedAt    DateTime           @updatedAt() @db.Timestamptz(6)
   updatedBy    String?            @db.VarChar
+  organizer    User               @relation(fields: [createdBy], references: [id])
 
   @@map("events")
 }
