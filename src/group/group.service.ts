@@ -14,64 +14,41 @@ import { SendEmailInviteDto } from './dto/send-email-invite.dto';
 import { MessagingQueueProducer } from '../common/messaging/queue/producer';
 import { isUUID } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
+import { CrudService } from '../common/database/crud.service';
+import { GroupMapType } from './group.maptype';
+import { PaginationSearchOptionsDto } from '../common/database/pagination-search-options.dto';
+import { GroupMemberService } from './group-member/group-member.service';
+import { FilterGroupDto } from './dto/filter-group.dto';
 
 @Injectable()
-export class GroupService {
+export class GroupService extends CrudService<
+  Prisma.GroupDelegate,
+  GroupMapType
+> {
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
+    private groupMemberService: GroupMemberService,
     private cloudinaryService: CloudinaryService,
     private messagingQueue: MessagingQueueProducer,
-  ) {}
+  ) {
+    super(prisma.group);
+  }
 
-  async getMyGroups(user: User) {
-    const groups = await this.prisma.groupMember.findMany({
+  async getMyGroups(dto: PaginationSearchOptionsDto, user: User) {
+    const parsedQueryFilters = this.parseQueryFilter(dto, [
+      'name',
+      'description',
+      'groupCode',
+    ]);
+    const args: Prisma.GroupFindManyArgs = {
       where: {
-        userId: user.id,
-        group: { createdBy: { not: user.id } },
-      },
-      select: {
-        group: {
-          include: {
-            members: {
-              include: {
-                user: true,
-              },
-            },
-          },
+        ...parsedQueryFilters,
+        members: {
+          some: { userId: user.id },
         },
+        createdBy: { not: user.id },
       },
-    });
-
-    return AppUtilities.removeSensitiveData(groups, 'password');
-  }
-
-  async getGroupById(id: string, user: User) {
-    const group = await this.prisma.group.findUnique({
-      where: { id, members: { some: { userId: user.id } } },
-    });
-
-    if (!group) throw new NotFoundException('Group not found');
-
-    const members = await this.prisma.groupMember.findMany({
-      where: { groupId: id },
-      include: { user: true },
-    });
-
-    if (!members) throw new NotFoundException('Cannot find group members');
-
-    const groupMembers = members.map(({ user, ...member }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = user;
-      return { ...member, user: userWithoutPassword };
-    });
-
-    return { ...group, members: groupMembers };
-  }
-
-  async getMyCreatedGroups(user: User) {
-    const groups = await this.prisma.group.findMany({
-      where: { createdBy: user.id },
       include: {
         members: {
           include: {
@@ -80,9 +57,72 @@ export class GroupService {
         },
         owner: true,
       },
+    };
+    return this.findManyPaginate(args, dto, (data) => {
+      return AppUtilities.removeSensitiveData(data, 'password', true);
+    });
+  }
+
+  async getGroupById(id: string, dto: FilterGroupDto, user: User) {
+    const group = await this.prisma.group.findUnique({
+      where: { id, members: { some: { userId: user.id } } },
     });
 
-    return AppUtilities.removeSensitiveData(groups, 'password');
+    if (!group) throw new NotFoundException('Group not found');
+
+    const parsedQueryFilters = this.parseQueryFilter(dto, [
+      'user.firstName',
+      'user.middleName',
+      'user.lastName',
+      'user.email',
+      {
+        key: 'gender',
+        where: (gender) => ({ user: { gender } }),
+      },
+    ]);
+    const groupMemberArgs: Prisma.GroupMemberFindManyArgs = {
+      where: {
+        ...parsedQueryFilters,
+        groupId: id,
+      },
+      include: { user: true },
+    };
+
+    const members = await this.groupMemberService.findManyPaginate(
+      groupMemberArgs,
+      dto,
+      (data) => {
+        return AppUtilities.removeSensitiveData(data, 'password', true);
+      },
+    );
+
+    if (!members) throw new NotFoundException('Cannot find group members');
+
+    return { ...group, members };
+  }
+
+  async getMyCreatedGroups(dto: PaginationSearchOptionsDto, user: User) {
+    const parsedQueryFilters = this.parseQueryFilter(dto, [
+      'name',
+      'description',
+      'groupCode',
+    ]);
+    const args: Prisma.GroupFindManyArgs = {
+      where: {
+        ...parsedQueryFilters,
+        createdBy: user.id,
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    };
+    return this.findManyPaginate(args, dto, (data) => {
+      return AppUtilities.removeSensitiveData(data, 'password', true);
+    });
   }
 
   async createGroup(

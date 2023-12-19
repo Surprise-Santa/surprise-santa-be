@@ -20,7 +20,6 @@ import { GoogleStrategy } from './auth/strategy/google.strategy';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { SettingsModule } from './settings/settings.module';
 import { BullModule } from '@nestjs/bull';
-import { GroupMemberModule } from './group-member/group-member.module';
 
 @Module({
   imports: [
@@ -64,7 +63,6 @@ import { GroupMemberModule } from './group-member/group-member.module';
     CloudinaryModule,
     WishlistModule,
     SettingsModule,
-    GroupMemberModule,
   ],
   controllers: [AppController],
   providers: [
