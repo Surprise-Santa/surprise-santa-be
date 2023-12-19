@@ -15,5 +15,5 @@ export class CreateGroupDto {
 
   @ApiProperty({ type: 'string', format: 'binary' })
   @IsOptional()
-  logo?: Express.Multer.File;
+  logoUrl?: Express.Multer.File;
 }
