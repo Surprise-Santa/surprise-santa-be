@@ -125,17 +125,39 @@ export class GroupService extends CrudService<
     });
   }
 
-  async getGroupMembers(groupId: string) {
+  async getGroupMembers(groupId: string, dto: FilterGroupDto) {
+    const parsedQueryFilters = this.parseQueryFilter(dto, [
+      'user.firstName',
+      'user.middleName',
+      'user.lastName',
+      'user.email',
+      {
+        key: 'gender',
+        where: (gender) => ({ user: { gender } }),
+      },
+    ]);
+
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
     });
 
     if (!group) throw new NotFoundException('Group not found');
 
-    return await this.prisma.groupMember.findMany({
-      where: { groupId },
-      include: { group: true },
-    });
+    const groupMemberArgs: Prisma.GroupMemberFindManyArgs = {
+      where: {
+        ...parsedQueryFilters,
+        groupId,
+      },
+      include: { user: true, group: true },
+    };
+
+    return await this.groupMemberService.findManyPaginate(
+      groupMemberArgs,
+      dto,
+      (data) => {
+        return AppUtilities.removeSensitiveData(data, 'password');
+      },
+    );
   }
 
   async getGroupDetails(groupCode: string) {
