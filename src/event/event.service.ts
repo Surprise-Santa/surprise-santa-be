@@ -38,7 +38,7 @@ export class EventService {
 
     return events.map((data) => {
       const { event } = data;
-      return AppUtilities.removeSensitiveData(event, 'password', true);
+      return AppUtilities.removeSensitiveData(event, 'password');
     });
     return events;
   }
@@ -50,7 +50,7 @@ export class EventService {
     });
 
     return event.map((data) => {
-      return AppUtilities.removeSensitiveData(data, 'password', true);
+      return AppUtilities.removeSensitiveData(data, 'password');
     });
   }
 
@@ -64,7 +64,7 @@ export class EventService {
 
     if (!event) throw new NotAcceptableException('Invalid event!');
 
-    return AppUtilities.removeSensitiveData(event, 'password', true);
+    return AppUtilities.removeSensitiveData(event, 'password');
   }
 
   async getGroupEvent(groupId: string, eventId: string) {
@@ -241,7 +241,7 @@ export class EventService {
       );
 
     return event?.pairs[0]
-      ? AppUtilities.removeSensitiveData(event.pairs[0], 'password', true)
+      ? AppUtilities.removeSensitiveData(event.pairs[0], 'password')
       : null;
   }
 
@@ -295,7 +295,7 @@ export class EventService {
         throw error;
       }
     }
-    return AppUtilities.removeSensitiveData(match, 'password', true);
+    return AppUtilities.removeSensitiveData(match, 'password');
   }
 
   private createEventBeneficiary(

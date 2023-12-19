@@ -20,6 +20,6 @@ export class UserService {
 
     if (!foundUser) throw new NotAcceptableException('User not found');
 
-    return AppUtilities.removeSensitiveData(foundUser, 'password', true);
+    return AppUtilities.removeSensitiveData(foundUser, 'password');
   }
 }
