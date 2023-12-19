@@ -66,8 +66,11 @@ export class GroupController {
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get('/:id/members')
-  async getGroupMembers(@Param('id', ParseUUIDPipe) id: string) {
-    return await this.groupService.getGroupMembers(id);
+  async getGroupMembers(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() dto: PaginationSearchOptionsDto,
+  ) {
+    return await this.groupService.getGroupMembers(id, dto);
   }
 
   @Get('/:groupCode/details')
