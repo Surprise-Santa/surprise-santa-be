@@ -33,6 +33,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
-    return AppUtilities.removeSensitiveData(user, 'password', true);
+    return AppUtilities.removeSensitiveData(user, 'password');
   }
 }

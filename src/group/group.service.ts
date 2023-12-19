@@ -43,7 +43,7 @@ export class GroupService {
       },
     });
 
-    return AppUtilities.removeSensitiveData(groups, 'password', true);
+    return AppUtilities.removeSensitiveData(groups, 'password');
   }
 
   async getGroupById(id: string, user: User) {
@@ -82,7 +82,7 @@ export class GroupService {
       },
     });
 
-    return AppUtilities.removeSensitiveData(groups, 'password', true);
+    return AppUtilities.removeSensitiveData(groups, 'password');
   }
 
   async createGroup(
@@ -140,7 +140,7 @@ export class GroupService {
           },
         });
 
-        return AppUtilities.removeSensitiveData(group, 'password', true);
+        return AppUtilities.removeSensitiveData(group, 'password');
       });
     } catch (error) {
       console.log(error);
@@ -181,7 +181,7 @@ export class GroupService {
       },
     });
 
-    return AppUtilities.removeSensitiveData(result, 'password', true);
+    return AppUtilities.removeSensitiveData(result, 'password');
   }
 
   async sendGroupInvite(

@@ -14,6 +14,6 @@ export class GroupMemberService {
 
     if (!member) throw new NotFoundException('Member not found');
 
-    return AppUtilities.removeSensitiveData(member, 'password', true);
+    return AppUtilities.removeSensitiveData(member, 'password');
   }
 }
