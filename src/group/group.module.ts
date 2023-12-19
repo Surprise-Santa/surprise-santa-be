@@ -5,10 +5,19 @@ import { EventService } from '@@/event/event.service';
 import { BullModule } from '@nestjs/bull';
 import { QUEUE } from '../common/messaging/interfaces';
 import { MessagingQueueProducer } from '../common/messaging/queue/producer';
+import { GroupMemberService } from './group-member/group-member.service';
+import { GroupMemberController } from './group-member/group-member.controller';
+import { EventParticipantService } from '../event/participants/event-participant.service';
 
 @Module({
   imports: [BullModule.registerQueue({ name: QUEUE })],
-  controllers: [GroupController],
-  providers: [GroupService, EventService, MessagingQueueProducer],
+  controllers: [GroupController, GroupMemberController],
+  providers: [
+    GroupService,
+    GroupMemberService,
+    EventService,
+    EventParticipantService,
+    MessagingQueueProducer,
+  ],
 })
 export class GroupModule {}

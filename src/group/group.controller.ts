@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   Param,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GroupService } from './group.service';
@@ -20,6 +21,9 @@ import { ApiTag } from '@@/common/interfaces';
 import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
 import { EventService } from '@@/event/event.service';
 import { SendEmailInviteDto } from './dto/send-email-invite.dto';
+import { PaginationSearchOptionsDto } from '../common/database/pagination-search-options.dto';
+import { FilterGroupDto } from './dto/filter-group.dto';
+import { FilterEventsDto } from '../event/dto/filter-event.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -32,26 +36,36 @@ export class GroupController {
   ) {}
 
   @Get('/my-groups')
-  async getMyGroups(@GetRequestUser() user: User) {
-    return await this.groupService.getMyGroups(user);
+  async getMyGroups(
+    @Query() dto: PaginationSearchOptionsDto,
+    @GetRequestUser() user: User,
+  ) {
+    return await this.groupService.getMyGroups(dto, user);
   }
 
   @Get('/own-groups')
-  async getMyCreatedGroups(@GetRequestUser() user: User) {
-    return await this.groupService.getMyCreatedGroups(user);
+  async getMyCreatedGroups(
+    @Query() dto: PaginationSearchOptionsDto,
+    @GetRequestUser() user: User,
+  ) {
+    return await this.groupService.getMyCreatedGroups(dto, user);
   }
 
   @Get('/:id/events')
-  async getGroupEvents(@Param('id', ParseUUIDPipe) id: string) {
-    return this.eventService.getGroupEvents(id);
+  async getGroupEvents(
+    @Query() dto: FilterEventsDto,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.eventService.getGroupEvents(dto, id);
   }
 
   @Get('/:id')
   async getGroupById(
+    @Query() dto: FilterGroupDto,
     @Param('id', ParseUUIDPipe) id: string,
     @GetRequestUser() user: User,
   ) {
-    return await this.groupService.getGroupById(id, user);
+    return await this.groupService.getGroupById(id, dto, user);
   }
 
   @Get('/:id/events/:eventId')

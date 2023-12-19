@@ -12,8 +12,8 @@ import { ApiTag } from '@@/common/interfaces';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@ApiTags(ApiTag.MEMBER)
-@Controller('member')
+@ApiTags(ApiTag.GROUP)
+@Controller('/groups/members')
 export class GroupMemberController {
   constructor(private readonly groupMemberService: GroupMemberService) {}
 
