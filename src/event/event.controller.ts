@@ -5,6 +5,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { EventService } from './event.service';
@@ -16,6 +17,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
 import { ApiTag } from '@@/common/interfaces';
 import { ApiResponseMeta } from '@@/common/decorators/response.decorator';
+import { PaginationSearchOptionsDto } from '../common/database/pagination-search-options.dto';
 
 @ApiTags(ApiTag.EVENT)
 @ApiBearerAuth()
@@ -25,8 +27,11 @@ export class EventController {
   constructor(private eventService: EventService) {}
 
   @Get()
-  async getAllEvents(@GetRequestUser() user: User) {
-    return this.eventService.getEvents(user.id);
+  async getAllEvents(
+    @Query() dto: PaginationSearchOptionsDto,
+    @GetRequestUser() user: User,
+  ) {
+    return this.eventService.getEvents(dto, user.id);
   }
 
   @Get('/:id')

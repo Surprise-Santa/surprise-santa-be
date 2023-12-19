@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 import {
   BadRequestException,
   ForbiddenException,
@@ -18,40 +17,62 @@ import { AppUtilities } from '@@/common/utilities';
 import { AddEventParticipantsDto } from './dto/add-event-participants.dto';
 import { PrismaService } from '@@/common/database/prisma/prisma.service';
 import moment from 'moment';
+import { CrudService } from '../common/database/crud.service';
+import { EventMapType } from './event.maptype';
+import { PaginationSearchOptionsDto } from '../common/database/pagination-search-options.dto';
 
 @Injectable()
-export class EventService {
-  constructor(private prisma: PrismaService) {}
-
-  async getEvents(userId: string) {
-    const events = await this.prisma.eventParticipant.findMany({
-      where: { userId },
-      select: {
-        event: {
-          include: {
-            participants: { include: { user: true } },
-            organizer: true,
-          },
-        },
-      },
-    });
-
-    return events.map((data) => {
-      const { event } = data;
-      return AppUtilities.removeSensitiveData(event, 'password');
-    });
-    return events;
+export class EventService extends CrudService<
+  Prisma.EventDelegate,
+  EventMapType
+> {
+  constructor(private prisma: PrismaService) {
+    super(prisma.event);
   }
 
-  async getGroupEvents(groupId: string) {
-    const event = await this.prisma.event.findMany({
-      where: { groupId },
-      include: { participants: { include: { user: true } } },
-    });
+  async getEvents(dto: PaginationSearchOptionsDto, userId: string) {
+    const parsedQueryFilters = this.parseQueryFilter(dto, [
+      'name',
+      'description',
+      'groupCode',
+    ]);
 
-    return event.map((data) => {
-      return AppUtilities.removeSensitiveData(data, 'password');
-    });
+    const args: Prisma.EventFindManyArgs = {
+      where: {
+        ...parsedQueryFilters,
+        participants: { some: { userId } },
+      },
+      include: {
+        participants: { include: { user: true } },
+        organizer: true,
+      },
+    };
+    return this.findManyPaginate(args, dto, (data) =>
+      AppUtilities.removeSensitiveData(data, 'password'),
+    );
+  }
+
+  async getGroupEvents(dto: PaginationSearchOptionsDto, groupId: string) {
+    const parsedQueryFilters = this.parseQueryFilter(dto, [
+      'name',
+      'description',
+      'groupCode',
+    ]);
+
+    const args: Prisma.EventFindManyArgs = {
+      where: {
+        ...parsedQueryFilters,
+        groupId,
+      },
+      include: {
+        participants: { include: { user: true } },
+        organizer: true,
+      },
+    };
+
+    return this.findManyPaginate(args, dto, (data) =>
+      AppUtilities.removeSensitiveData(data, 'password'),
+    );
   }
 
   async getEvent(eventId: string, user: User) {

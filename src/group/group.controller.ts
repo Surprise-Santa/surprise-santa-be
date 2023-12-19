@@ -51,8 +51,11 @@ export class GroupController {
   }
 
   @Get('/:id/events')
-  async getGroupEvents(@Param('id', ParseUUIDPipe) id: string) {
-    return this.eventService.getGroupEvents(id);
+  async getGroupEvents(
+    @Query() dto: PaginationSearchOptionsDto,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.eventService.getGroupEvents(dto, id);
   }
 
   @Get('/:id')
