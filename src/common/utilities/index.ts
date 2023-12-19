@@ -139,7 +139,7 @@ export class AppUtilities {
   public static removeSensitiveData(
     data: any,
     deleteKeys: any,
-    remove?: boolean,
+    remove: boolean = true,
   ) {
     if (typeof data != 'object') return; // if data not object
     if (!data) return; // null object
