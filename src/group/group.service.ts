@@ -100,7 +100,10 @@ export class GroupService {
   async getGroupDetails(groupCode: string) {
     const group = await this.prisma.group.findUnique({
       where: { groupCode },
-      include: { events: true },
+      include: {
+        events: true,
+        owner: { select: { firstName: true, lastName: true } },
+      },
     });
 
     if (!group) throw new NotFoundException('Group not found');
@@ -110,7 +113,7 @@ export class GroupService {
 
   async createGroup(
     dto: CreateGroupDto,
-    logo: Express.Multer.File,
+    logoUrl: Express.Multer.File,
     user: User,
   ) {
     const foundUser = await this.prisma.user.findUnique({
@@ -130,10 +133,12 @@ export class GroupService {
 
     try {
       return await this.prisma.$transaction(async () => {
-        const uploadLogo: any = logo
-          ? await this.cloudinaryService.uploadLogo(logo, user.id).catch(() => {
-              throw new BadRequestException('Invalid file type');
-            })
+        const uploadLogo: any = logoUrl
+          ? await this.cloudinaryService
+              .uploadLogo(logoUrl, user.id)
+              .catch(() => {
+                throw new BadRequestException('Invalid file type');
+              })
           : null;
 
         const logosUrl = uploadLogo?.secure_url || '';

@@ -51,7 +51,7 @@ export class GroupController {
     return await this.groupService.getGroupMembers(id);
   }
 
-  @Get('/:id/details')
+  @Get('/:groupCode/details')
   async getGroupDetails(@Param('groupCode') groupCode: string) {
     return await this.groupService.getGroupDetails(groupCode);
   }
@@ -85,13 +85,13 @@ export class GroupController {
 
   @ApiConsumes('multipart/form-data')
   @Post('/create')
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('logoUrl'))
   async createGroup(
     @Body() dto: CreateGroupDto,
-    @UploadedFile() logo: Express.Multer.File,
+    @UploadedFile() logoUrl: Express.Multer.File,
     @GetRequestUser() user: User,
   ) {
-    return this.groupService.createGroup(dto, logo, user);
+    return this.groupService.createGroup(dto, logoUrl, user);
   }
 
   @ApiResponseMeta({ message: 'Email invite sent successfully' })
