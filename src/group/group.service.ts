@@ -171,7 +171,7 @@ export class GroupService extends CrudService<
 
     if (!group) throw new NotFoundException('Group not found');
 
-    return group;
+    return AppUtilities.removeSensitiveData(group, 'password');
   }
 
   async createGroup(
