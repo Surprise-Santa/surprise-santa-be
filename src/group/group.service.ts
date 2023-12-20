@@ -165,6 +165,7 @@ export class GroupService extends CrudService<
       where: { groupCode },
       include: {
         owner: { select: { firstName: true, lastName: true } },
+        members: { include: { user: true } },
       },
     });
 
