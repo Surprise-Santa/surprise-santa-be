@@ -20,6 +20,8 @@ import { GoogleStrategy } from './auth/strategy/google.strategy';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { SettingsModule } from './settings/settings.module';
 import { BullModule } from '@nestjs/bull';
+import { SchedulerModule } from './common/scheduler/scheduler.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -34,10 +36,10 @@ import { BullModule } from '@nestjs/bull';
         },
       }),
     }),
-    GroupModule,
     CacheModule,
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
     EventModule,
+    GroupModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -51,6 +53,7 @@ import { BullModule } from '@nestjs/bull';
     MessagingModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     PrismaModule,
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -63,6 +66,7 @@ import { BullModule } from '@nestjs/bull';
     CloudinaryModule,
     WishlistModule,
     SettingsModule,
+    SchedulerModule,
   ],
   controllers: [AppController],
   providers: [
