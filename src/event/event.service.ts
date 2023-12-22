@@ -419,13 +419,14 @@ export class EventService extends CrudService<
         );
         break;
       } catch (error) {
-        if (error.code === 'P2034' || error.code === 'P20002') {
-          retries++;
-          continue;
-        } else throw error;
+        console.log(error);
+        retries++;
+        continue;
       }
     }
-    return AppUtilities.removeSensitiveData(match, 'password');
+    return match
+      ? AppUtilities.removeSensitiveData(match, 'password')
+      : 'Please try again!';
   }
 
   private createEventBeneficiary(
