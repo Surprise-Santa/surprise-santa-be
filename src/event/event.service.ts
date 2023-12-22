@@ -358,31 +358,50 @@ export class EventService extends CrudService<
   }
 
   async pairEventParticipants(eventId: string, userId: string) {
-    const eventPair = await this.getEventPairing(eventId, userId);
+    const isEventParticipant = await this.prisma.eventParticipant.findUnique({
+      where: {
+        userId_eventId: {
+          userId,
+          eventId,
+        },
+      },
+    });
+    if (!isEventParticipant) return;
 
+    const eventPair = await this.getEventPairing(eventId, userId);
     if (eventPair) return eventPair;
 
-    const eventParticipants = await this.prisma.eventParticipant.findMany({
-      where: { eventId },
+    const donor = await this.prisma.eventPairing.findUnique({
+      where: {
+        eventId_beneficiaryId: {
+          eventId,
+          beneficiaryId: userId,
+        },
+      },
     });
 
-    const eventParticipant = eventParticipants.find(
-      (participant) => participant.userId === userId,
-    );
+    const { pairs, participants } = await this.prisma.event.findFirst({
+      where: { id: eventId },
+      select: {
+        participants: {
+          where: {
+            NOT: {
+              OR: [{ userId: donor?.donorId }, { userId }],
+            },
+          },
+        },
+        pairs: true,
+      },
+    });
 
-    if (!eventParticipant) throw new NotAcceptableException();
-
-    const MAX_RETRIES = eventParticipants.length;
+    const MAX_RETRIES = participants.length;
     let retries = 0;
     let match: EventPairing;
     while (retries < MAX_RETRIES) {
       try {
         match = await this.prisma.$transaction(
           async (prisma: PrismaClient) => {
-            const match = this.createEventBeneficiary(
-              eventParticipant,
-              eventParticipants,
-            );
+            const match = this.createEventBeneficiary(pairs, participants);
 
             return await prisma.eventPairing.create({
               data: {
@@ -400,26 +419,24 @@ export class EventService extends CrudService<
         );
         break;
       } catch (error) {
-        if (error.code === 'P2034') {
+        if (error.code === 'P2034' || error.code === 'P20002') {
           retries++;
           continue;
-        }
-        throw error;
+        } else throw error;
       }
     }
     return AppUtilities.removeSensitiveData(match, 'password');
   }
 
   private createEventBeneficiary(
-    { userId }: EventParticipant,
-    eventParticipants: EventParticipant[],
+    pairs: EventPairing[],
+    participants: EventParticipant[],
   ): EventParticipant {
-    let beneficiary: EventParticipant;
-    do {
-      beneficiary =
-        eventParticipants[Math.floor(Math.random() * eventParticipants.length)];
-    } while (beneficiary.userId === userId);
-
-    return beneficiary;
+    const beneficiaryIds = pairs.map(({ beneficiaryId }) => beneficiaryId);
+    const validParticipants = participants.filter(
+      (participant) => !beneficiaryIds.includes(participant.userId),
+    );
+    const randomIndex = Math.floor(Math.random() * validParticipants.length);
+    return validParticipants[randomIndex];
   }
 }
