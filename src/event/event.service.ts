@@ -120,6 +120,7 @@ export class EventService extends CrudService<
         id: eventId,
         participants: { some: { userId: user.id } },
       },
+      include: { group: true },
     });
 
     if (!event) throw new NotFoundException('Event not found');
