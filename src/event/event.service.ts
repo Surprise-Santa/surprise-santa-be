@@ -72,6 +72,12 @@ export class EventService extends CrudService<
   }
 
   async getGroupEvents(dto: FilterEventsDto, groupId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
     const parsedQueryFilters = this.parseQueryFilter(dto, [
       'title',
       'description',
@@ -109,12 +115,14 @@ export class EventService extends CrudService<
   }
 
   async getEvent(eventId: string, dto: PaginationSearchOptionsDto, user: User) {
-    const event = await this.findFirstOrThrow({
+    const event = await this.findFirst({
       where: {
         id: eventId,
         participants: { some: { userId: user.id } },
       },
     });
+
+    if (!event) throw new NotFoundException('Event not found');
 
     const parsedQueryFilters = this.parseQueryFilter(dto, [
       'user.firstName',
@@ -142,10 +150,14 @@ export class EventService extends CrudService<
   }
 
   async getGroupEvent(groupId: string, eventId: string) {
-    return this.prisma.event.findFirst({
+    const groupEvent = await this.prisma.event.findFirst({
       where: { groupId, id: eventId },
       include: { participants: true },
     });
+
+    if (!groupEvent) throw new NotFoundException('Event not found');
+
+    return groupEvent;
   }
 
   async createEvent({ groupId, ...dto }: CreateEventDto, user: User) {
@@ -218,11 +230,26 @@ export class EventService extends CrudService<
       },
     });
 
+    if (!event) throw new NotFoundException('Event not found');
+
+    const participant = await this.prisma.eventParticipant.findFirst({
+      where: {
+        eventId,
+        userId,
+      },
+    });
+
+    if (participant)
+      throw new ForbiddenException('You have already joined this event');
+
     const validEvent = event.group.members.find(
       (member) => member.user.id === userId,
     );
 
-    if (!validEvent) throw new ForbiddenException('Cannot join this event');
+    if (!validEvent)
+      throw new ForbiddenException(
+        'Cannot join this event because you are not a member of the group',
+      );
 
     const eventStarted = moment(Date.now()).isSameOrAfter(event.startDate);
 
@@ -257,6 +284,8 @@ export class EventService extends CrudService<
         },
       },
     });
+
+    if (!event) throw new NotFoundException('Event not found');
 
     const groupMembers = event.group.members.map((member) => ({
       id: member.user.id,
