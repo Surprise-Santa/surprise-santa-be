@@ -274,6 +274,8 @@ export class EventService extends CrudService<
         id: eventId,
       },
       select: {
+        startDate: true,
+        endDate: true,
         group: {
           select: {
             members: {
@@ -287,6 +289,12 @@ export class EventService extends CrudService<
     });
 
     if (!event) throw new NotFoundException('Event not found');
+
+    if (moment().isSameOrAfter(event.startDate)) {
+      throw new NotAcceptableException(
+        'Cannot join an event that has started!',
+      );
+    }
 
     const groupMembers = event.group.members.map((member) => ({
       id: member.user.id,
