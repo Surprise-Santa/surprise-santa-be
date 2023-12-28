@@ -18,7 +18,7 @@ jobs:
           node-version: '18.x'
       - name: Decrypt files
         run: |
-          gpg --decrypt --quiet --batch --passphrase=${{ secrets.PASSPHRASE }} --pinentry-mode loopback --output .env .doings.gpg
+          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.PASSPHRASE }} --pinentry-mode loopback --output .env .doings.gpg
         env:
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
       - name: Install dependencies
