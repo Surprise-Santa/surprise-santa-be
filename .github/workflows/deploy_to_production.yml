@@ -62,5 +62,5 @@ jobs:
           tar -xvf deployment-artifacts1.tar.gz
       - name: Apply updates
         run: npm run apply.updates
-    - name: Start Application
-      run: pm2 restart surprise-santa-prod
+      - name: Start Application
+        run: pm2 restart surprise-santa-prod
