@@ -5,25 +5,62 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    runs-on: self-hosted
+  github-build:
+    name: Github Build
+    runs-on: ubuntu-latest
 
     environment:
       name: production
 
     steps:
       - uses: actions/checkout@v3
-      # - uses: actions/setup-node@v3
-      #   with:
-      #     node-version: '18.x'
-      - name: Decrypt files
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - name: Decrypt files for ${{ github.ref }}
         run: |
-          gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.PASSPHRASE }} --output .env .doings.gpg
+          gpg --quiet --batch --yes --decrypt --passphrase="$PASSPHRASE" --output .env .doings.gpg
         env:
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
       - name: Install dependencies
         run: npm install
       - name: Apply updates
         run: npm run apply.updates
-      # - name: Start Application
-      #   run: pm2 restart
+      - name: Build App
+        run: npm run build
+      - name: Create deployment tar file
+        run: touch deployment-artifacts1.tar.gz
+      - name: Bundle deployment file
+        run: |
+          tar --exclude=deployment-artifacts1.tar.gz -czf deployment-artifacts1.tar.gz .
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-artifacts
+          path: deployment-artifacts1.tar.gz
+
+  build:
+    name: Build on Surprise Santa Ubuntu
+    runs-on: self-hosted
+    needs: github-build
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: deployment-artifacts
+      - name: Delete dist folder
+        run: rm -rf dist
+      - name: Delete src
+        run: rm -rf src
+      - name: Remove node-modules dir
+        run: rm -rf node_modules
+      - name: Remove Environment Variable
+        run: rm -f .env
+      - name: Extract artifact extra comment
+        run: |
+          tar -xvf deployment-artifacts1.tar.gz
+      - name: Apply updates
+        run: npm run apply.updates
+    # - name: Start Application
+    #   run: pm2 restart
