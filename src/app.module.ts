@@ -33,8 +33,6 @@ import { ScheduleModule } from '@nestjs/schedule';
         redis: {
           host: config.get('redis.host'),
           port: config.get('redis.port'),
-          username: config.get('redis.username'),
-          password: config.get('redis.password'),
         },
       }),
     }),

@@ -57,8 +57,6 @@ const config = {
     ttl: env('REDIS_TTL'),
     host: env.require('REDIS_HOST'),
     port: parseInt(env('REDIS_PORT', '6379')),
-    username: env.require('REDIS_USER'),
-    password: env.require('REDIS_PASSWORD'),
   },
   swagger: {
     user: {
