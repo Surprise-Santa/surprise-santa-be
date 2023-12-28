@@ -8,6 +8,9 @@ jobs:
   build:
     runs-on: self-hosted
 
+    environment:
+      name: Pre-deployment
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
