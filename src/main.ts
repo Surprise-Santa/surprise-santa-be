@@ -36,6 +36,7 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:3001',
       'https://secret-santa-supreme.vercel.app',
+      'https://surprisesanta.org',
     ],
     credentials: true,
   });
