@@ -358,6 +358,16 @@ export class EventService extends CrudService<
   }
 
   async pairEventParticipants(eventId: string, userId: string) {
+    const allParticipants = await this.prisma.eventParticipant.findMany({
+      where: { eventId },
+    });
+
+    if (allParticipants.length < 3) {
+      throw new NotAcceptableException(
+        'Cannot get pair! Participants need to be at least 3 members',
+      );
+    }
+
     const isEventParticipant = await this.prisma.eventParticipant.findUnique({
       where: {
         userId_eventId: {
